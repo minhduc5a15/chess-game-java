@@ -1,5 +1,7 @@
-package com.minhduc5a12.chess;
+package com.minhduc5a12.chess.pieces;
 
+import com.minhduc5a12.chess.ChessPiece;
+import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
 
@@ -24,7 +26,7 @@ public class Bishop extends ChessPiece {
         int x = startX + directionX;
         int y = startY + directionY;
         while (x != endX && y != endY) {
-            if (BoardUtils.isWithinBoard(x, y) || board[y][x].getPiece() != null) {
+            if (!BoardUtils.isWithinBoard(x, y) || board[y][x].getPiece() != null) {
                 return false; // Có quân cờ chặn đường hoặc vượt ra khỏi bàn cờ
             }
             x += directionX;

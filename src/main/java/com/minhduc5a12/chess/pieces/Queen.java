@@ -1,5 +1,7 @@
-package com.minhduc5a12.chess;
+package com.minhduc5a12.chess.pieces;
 
+import com.minhduc5a12.chess.ChessPiece;
+import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
 
@@ -26,7 +28,7 @@ public class Queen extends ChessPiece {
         int y = startY + directionY;
         while (x != endX || y != endY) {
             // Kiểm tra xem chỉ số hàng và cột có hợp lệ không
-            if (BoardUtils.isWithinBoard(x, y)) return false;
+            if (!BoardUtils.isWithinBoard(x, y)) return false;
 
             if (board[y][x].getPiece() != null) {
                 return false; // Có quân cờ chặn đường

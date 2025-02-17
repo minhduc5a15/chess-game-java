@@ -1,6 +1,8 @@
 package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.utils.BoardUtils;
+import com.minhduc5a12.chess.pieces.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -146,13 +148,22 @@ public class ChessBoard extends JPanel {
 
                     // Kiểm tra nước đi hợp lệ
                     if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, tiles)) {
+                        // In ra nước đi
+
                         // Di chuyển quân cờ
                         clickedTile.setPiece(selectedPiece);
                         selectedTile.setPiece(null);
 
-                        // Nếu ô đích có quân cờ đối phương, thực hiện bắt quân
-                        if (targetPiece != null) {
-                            System.out.println("Bắt quân: " + targetPiece.getClass().getSimpleName());
+                        // Đánh dấu quân cờ đã di chuyển
+                        selectedPiece.setHasMoved(true);
+                        String moveNotation = BoardUtils.toAlgebraicNotation(selectedPiece, selectedTile.getCol(), selectedTile.getRow(), col, row, targetPiece, tiles);
+                        System.out.println(moveNotation);
+
+
+                        // Xử lý nhập thành (Castling)
+                        if (selectedPiece instanceof King && Math.abs(col - selectedTile.getCol()) == 2) {
+                            performCastling(selectedTile.getRow(), col);
+                            System.out.println(col > selectedTile.getCol() ? "O-O" : "O-O-O"); // In nhập thành
                         }
 
                         // Đổi lượt cho người chơi tiếp theo
@@ -162,6 +173,9 @@ public class ChessBoard extends JPanel {
                         if (onTurnChange != null) {
                             onTurnChange.accept(currentPlayerColor);
                         }
+
+                        // In ra bàn cờ để kiểm tra
+                        BoardUtils.printBoard(tiles);
                     }
 
                     // Bỏ đánh dấu ô A và xóa danh sách các ô hợp lệ
@@ -171,6 +185,22 @@ public class ChessBoard extends JPanel {
                     repaint(); // Vẽ lại bàn cờ
                 }
             }
+        }
+
+        private void performCastling(int row, int kingEndX) {
+            int direction = (kingEndX > 4) ? 1 : -1; // Hướng di chuyển (cánh Vua hoặc cánh Hậu)
+            int rookStartX = (direction == 1) ? 7 : 0; // Vị trí Xe ban đầu
+            int rookEndX = (direction == 1) ? kingEndX - 1 : kingEndX + 1; // Vị trí Xe sau khi nhập thành
+
+            // Di chuyển Xe
+            ChessTile rookStartTile = tiles[row][rookStartX];
+            ChessPiece rook = rookStartTile.getPiece();
+            tiles[row][rookEndX].setPiece(rook);
+            rookStartTile.setPiece(null);
+
+            // Đánh dấu Xe đã di chuyển
+            rook.setHasMoved(true);
+
         }
     }
 

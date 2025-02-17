@@ -1,5 +1,7 @@
-package com.minhduc5a12.chess;
+package com.minhduc5a12.chess.pieces;
 
+import com.minhduc5a12.chess.ChessPiece;
+import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
 
@@ -10,6 +12,11 @@ public class Rook extends ChessPiece {
 
     @Override
     public boolean isValidMove(int startX, int startY, int endX, int endY, ChessTile[][] board) {
+        // Kiểm tra xem tọa độ đích có nằm trong bàn cờ không
+        if (!BoardUtils.isWithinBoard(endX, endY)) {
+            return false;
+        }
+
         // Kiểm tra xem quân Xe có di chuyển theo hàng ngang hoặc dọc không
         if (startX != endX && startY != endY) {
             return false; // Quân Xe chỉ di chuyển theo hàng ngang hoặc dọc
@@ -20,17 +27,22 @@ public class Rook extends ChessPiece {
             // Di chuyển theo cột (dọc)
             int direction = (endY > startY) ? 1 : -1;
             for (int y = startY + direction; y != endY; y += direction) {
-                if (BoardUtils.isWithinBoard(startX, y) || board[y][startX].getPiece() != null) {
-                    return false; // Có quân cờ chặn đường hoặc vượt ra khỏi bàn cờ
+                if (!BoardUtils.isWithinBoard(startX, y)) {
+                    return false; // Vượt ra khỏi bàn cờ
+                }
+                if (board[y][startX].getPiece() != null) {
+                    return false; // Có quân cờ chặn đường
                 }
             }
         } else {
             // Di chuyển theo hàng (ngang)
-            int direction;
-            direction = (endX > startX) ? 1 : -1;
+            int direction = (endX > startX) ? 1 : -1;
             for (int x = startX + direction; x != endX; x += direction) {
-                if (BoardUtils.isWithinBoard(x, startY) || board[startY][x].getPiece() != null) {
-                    return false; // Có quân cờ chặn đường hoặc vượt ra khỏi bàn cờ
+                if (!BoardUtils.isWithinBoard(x, startY)) {
+                    return false; // Vượt ra khỏi bàn cờ
+                }
+                if (board[startY][x].getPiece() != null) {
+                    return false; // Có quân cờ chặn đường
                 }
             }
         }
