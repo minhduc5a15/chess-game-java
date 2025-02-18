@@ -46,7 +46,7 @@ public class ChessTile extends JPanel {
         } else {
             setBackground(originalColor); // Trả lại màu gốc khi không được chọn
         }
-        repaint(); // Vẽ lại ô cờ
+        repaint();
     }
 
     public Color getOriginalColor() {
@@ -65,7 +65,6 @@ public class ChessTile extends JPanel {
 
     private void drawPiece(Graphics g) {
         try {
-            // Sử dụng ClassLoader để tải hình ảnh từ thư mục resources
             ClassLoader classLoader = getClass().getClassLoader();
             java.net.URL imageUrl = classLoader.getResource(piece.getImagePath());
 

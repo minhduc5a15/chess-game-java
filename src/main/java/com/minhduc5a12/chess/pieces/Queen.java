@@ -8,7 +8,7 @@ import com.minhduc5a12.chess.utils.BoardUtils;
 public class Queen extends ChessPiece {
     public Queen(PieceColor color, String imagePath) {
         super(color, imagePath);
-        this.setPieceValue(4);
+        this.setPieceValue(9);
     }
 
     @Override

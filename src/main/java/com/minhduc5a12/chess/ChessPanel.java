@@ -6,10 +6,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class ChessPanel {
-    public static void main(String[] args) {
+    public ChessPanel() {
         JFrame frame = new JFrame("Chess Game");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         ChessBoard chessBoard = new ChessBoard();
         JLabel turnLabel = new JLabel("Lượt đi: Trắng", SwingConstants.CENTER);
         turnLabel.setFont(new Font("Arial", Font.BOLD, 16));

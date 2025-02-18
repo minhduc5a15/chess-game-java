@@ -26,6 +26,7 @@ public class SoundPlayer {
             new Thread(() -> {
                 try {
                     player.play();
+                    player.close();
                 } catch (JavaLayerException e) {
                     e.printStackTrace();
                 }
@@ -49,6 +50,10 @@ public class SoundPlayer {
     }
 
     public static void playMoveCheckSound() {
-        playSound("sounds/move-check");
+        playSound("sounds/move-check.mp3");
+    }
+
+    public static void playMoveIllegal() {
+        playSound("sounds/illegal.mp3");
     }
 }
