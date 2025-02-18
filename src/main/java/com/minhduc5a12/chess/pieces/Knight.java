@@ -7,6 +7,7 @@ import com.minhduc5a12.chess.constants.PieceColor;
 public class Knight extends ChessPiece {
     public Knight(PieceColor color, String imagePath) {
         super(color, imagePath);
+        this.setPieceValue(3);
     }
 
     @Override

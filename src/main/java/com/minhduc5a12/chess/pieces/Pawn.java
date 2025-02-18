@@ -7,6 +7,7 @@ import com.minhduc5a12.chess.constants.PieceColor;
 public class Pawn extends ChessPiece {
     public Pawn(PieceColor color, String imagePath) {
         super(color, imagePath);
+        this.setPieceValue(1);
     }
 
     @Override

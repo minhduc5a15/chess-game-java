@@ -8,6 +8,7 @@ import com.minhduc5a12.chess.utils.BoardUtils;
 public class Rook extends ChessPiece {
     public Rook(PieceColor color, String imagePath) {
         super(color, imagePath);
+        this.setPieceValue(5);
     }
 
     @Override

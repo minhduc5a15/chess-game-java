@@ -2,6 +2,7 @@ package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
+import com.minhduc5a12.chess.utils.SoundPlayer;
 import com.minhduc5a12.chess.pieces.*;
 
 import javax.swing.*;
@@ -94,18 +95,17 @@ public class ChessBoard extends JPanel {
         tiles[0][4].setPiece(new King(PieceColor.BLACK, "images/black_king.png"));
     }
 
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Vẽ các ô cờ
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 tiles[row][col].paintComponent(g);
             }
         }
 
-        // Vẽ hình tròn nhỏ màu đen ở giữa các ô hợp lệ
         g.setColor(Color.BLACK);
         for (ChessTile tile : validMoves) {
             int x = tile.getCol() * TILE_SIZE + TILE_SIZE / 2 - 5; // Tọa độ x của hình tròn
@@ -114,7 +114,6 @@ public class ChessBoard extends JPanel {
         }
     }
 
-    // Lớp lắng nghe sự kiện chuột
     private class ChessMouseListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -125,7 +124,7 @@ public class ChessBoard extends JPanel {
                 ChessTile clickedTile = tiles[row][col];
 
                 if (selectedTile == null) {
-                    // Chọn ô A
+                    // Chọn ô A (ô chứa quân cờ)
                     if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == currentPlayerColor) {
                         selectedTile = clickedTile;
                         selectedTile.setSelected(true); // Đánh dấu ô A được chọn
@@ -135,47 +134,64 @@ public class ChessBoard extends JPanel {
                         for (int r = 0; r < BOARD_SIZE; r++) {
                             for (int c = 0; c < BOARD_SIZE; c++) {
                                 if (selectedTile.getPiece().isValidMove(selectedTile.getCol(), selectedTile.getRow(), c, r, tiles)) {
-                                    validMoves.add(tiles[r][c]);
+                                    // Kiểm tra xem nước đi này có thoát chiếu không
+                                    if (BoardUtils.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), c, r, tiles, currentPlayerColor)) {
+                                        validMoves.add(tiles[r][c]);
+                                    }
                                 }
                             }
                         }
                         repaint(); // Vẽ lại bàn cờ để hiển thị các ô hợp lệ
                     }
                 } else {
-                    // Chọn ô B
+                    // Chọn ô B (ô đích)
                     ChessPiece selectedPiece = selectedTile.getPiece();
-                    ChessPiece targetPiece = clickedTile.getPiece();
 
                     // Kiểm tra nước đi hợp lệ
                     if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, tiles)) {
-                        // In ra nước đi
+                        // Kiểm tra xem nước đi này có thoát chiếu không
+                        if (BoardUtils.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), col, row, tiles, currentPlayerColor)) {
+                            // Kiểm tra xem nước đi có phải là nhập thành không
+                            boolean isCastling = selectedPiece instanceof King && Math.abs(col - selectedTile.getCol()) == 2;
+                            // Phát âm thanh tương ứng
+                            if (isCastling) {
+                                SoundPlayer.playCastleSound(); // Phát âm thanh nhập thành
+                            } else {
+                                // Kiểm tra xem có quân cờ ở ô đích không (ăn quân)
+                                ChessPiece targetPiece = clickedTile.getPiece();
+                                if (targetPiece != null) {
+                                    SoundPlayer.playCaptureSound(); // Phát âm thanh khi ăn quân
+                                } else {
+                                    SoundPlayer.playMoveSound(); // Phát âm thanh khi di chuyển quân
+                                }
+                            }
 
-                        // Di chuyển quân cờ
-                        clickedTile.setPiece(selectedPiece);
-                        selectedTile.setPiece(null);
+                            // Di chuyển quân cờ
+                            clickedTile.setPiece(selectedPiece);
+                            selectedTile.setPiece(null);
 
-                        // Đánh dấu quân cờ đã di chuyển
-                        selectedPiece.setHasMoved(true);
-                        String moveNotation = BoardUtils.toAlgebraicNotation(selectedPiece, selectedTile.getCol(), selectedTile.getRow(), col, row, targetPiece, tiles);
-                        System.out.println(moveNotation);
+                            // Đánh dấu quân cờ đã di chuyển
+                            selectedPiece.setHasMoved(true);
 
+                            // Xử lý nhập thành (Castling)
+                            if (isCastling) {
+                                performCastling(selectedTile.getRow(), col);
+                                System.out.println(col > selectedTile.getCol() ? "O-O" : "O-O-O"); // In nhập thành
+                            }
 
-                        // Xử lý nhập thành (Castling)
-                        if (selectedPiece instanceof King && Math.abs(col - selectedTile.getCol()) == 2) {
-                            performCastling(selectedTile.getRow(), col);
-                            System.out.println(col > selectedTile.getCol() ? "O-O" : "O-O-O"); // In nhập thành
+                            // Đổi lượt cho người chơi tiếp theo
+                            currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+
+                            // Cập nhật lượt đi trên giao diện
+                            if (onTurnChange != null) {
+                                onTurnChange.accept(currentPlayerColor);
+                            }
+
+                            // In ra bàn cờ để kiểm tra
+                            BoardUtils.printBoard(tiles);
+                        } else {
+                            System.out.println("Invalid move: King is still in check!");
                         }
-
-                        // Đổi lượt cho người chơi tiếp theo
-                        currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
-
-                        // Cập nhật lượt đi trên giao diện
-                        if (onTurnChange != null) {
-                            onTurnChange.accept(currentPlayerColor);
-                        }
-
-                        // In ra bàn cờ để kiểm tra
-                        BoardUtils.printBoard(tiles);
                     }
 
                     // Bỏ đánh dấu ô A và xóa danh sách các ô hợp lệ

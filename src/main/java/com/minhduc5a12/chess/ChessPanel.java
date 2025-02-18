@@ -14,9 +14,7 @@ public class ChessPanel {
         JLabel turnLabel = new JLabel("Lượt đi: Trắng", SwingConstants.CENTER);
         turnLabel.setFont(new Font("Arial", Font.BOLD, 16));
 
-        chessBoard.setOnTurnChange(newTurn -> {
-            turnLabel.setText("Lượt đi: " + (newTurn == PieceColor.WHITE ? "Trắng" : "Đen"));
-        });
+        chessBoard.setOnTurnChange(newTurn -> turnLabel.setText("Lượt đi: " + (newTurn == PieceColor.WHITE ? "Trắng" : "Đen")));
 
         frame.add(chessBoard, BorderLayout.CENTER);
         frame.add(turnLabel, BorderLayout.SOUTH);

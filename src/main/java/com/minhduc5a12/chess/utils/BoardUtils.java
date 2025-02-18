@@ -145,7 +145,6 @@ public class BoardUtils {
                 if (piece != null && piece.getColor() != color) {
                     // Kiểm tra xem quân cờ đối phương có thể tấn công Vua không
                     if (piece.isValidMove(x, y, kingX, kingY, board)) {
-                        System.out.println("Piece at (" + x + ", " + y + ") is attacking the king!");
                         return true;
                     }
                 }
@@ -198,5 +197,35 @@ public class BoardUtils {
         }
 
         return true; // Không có nước đi nào để thoát chiếu (chiếu bí)
+    }
+
+    /**
+     * Kiểm tra xem nước đi có thoát chiếu không.
+     *
+     * @param startX       Tọa độ cột ban đầu.
+     * @param startY       Tọa độ hàng ban đầu.
+     * @param endX         Tọa độ cột đích.
+     * @param endY         Tọa độ hàng đích.
+     * @param board        Bàn cờ hiện tại.
+     * @param currentColor Màu của người chơi hiện tại.
+     * @return true nếu nước đi thoát chiếu, false nếu không.
+     */
+    public static boolean isMoveValidUnderCheck(int startX, int startY, int endX, int endY, ChessTile[][] board, PieceColor currentColor) {
+        // Lưu trạng thái hiện tại của bàn cờ
+        ChessPiece originalPiece = board[endY][endX].getPiece();
+
+        // Thử di chuyển quân cờ
+        board[endY][endX].setPiece(board[startY][startX].getPiece());
+        board[startY][startX].setPiece(null);
+
+        // Kiểm tra xem Vua có còn bị chiếu không
+        boolean isKingInCheck = isKingInCheck(board, currentColor);
+
+        // Hoàn tác nước đi
+        board[startY][startX].setPiece(board[endY][endX].getPiece());
+        board[endY][endX].setPiece(originalPiece);
+
+        // Nếu Vua không còn bị chiếu, nước đi hợp lệ
+        return !isKingInCheck;
     }
 }

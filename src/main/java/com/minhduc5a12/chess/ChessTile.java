@@ -11,17 +11,16 @@ public class ChessTile extends JPanel {
     private static final int PIECE_SIZE = 95; // Kích thước quân cờ
 
     private ChessPiece piece; // Quân cờ trong ô (có thể là null)
-    private Color tileColor; // Màu của ô cờ
     private final Color originalColor; // Màu gốc của ô cờ
     private final int row; // Hàng của ô cờ
     private final int col; // Cột của ô cờ
 
     public ChessTile(Color tileColor, int row, int col) {
-        this.tileColor = tileColor;
         this.originalColor = tileColor; // Lưu màu gốc
         this.row = row;
         this.col = col;
         setPreferredSize(new Dimension(TILE_SIZE, TILE_SIZE));
+        setBackground(tileColor); // Đặt màu nền ban đầu
     }
 
     public int getRow() {
@@ -43,22 +42,20 @@ public class ChessTile extends JPanel {
 
     public void setSelected(boolean selected) {
         if (selected) {
-            // Đổi màu khi ô được chọn
-            tileColor = new Color(0xabd73d); // Màu vàng để đánh dấu ô được chọn
+            setBackground(new Color(0xabd73d)); // Màu vàng để đánh dấu ô được chọn
         } else {
-            // Trả lại màu gốc khi không được chọn
-            tileColor = originalColor;
+            setBackground(originalColor); // Trả lại màu gốc khi không được chọn
         }
         repaint(); // Vẽ lại ô cờ
+    }
+
+    public Color getOriginalColor() {
+        return originalColor;
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
-        // Vẽ màu nền của ô cờ
-        g.setColor(tileColor);
-        g.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
 
         // Vẽ quân cờ nếu có
         if (piece != null) {
