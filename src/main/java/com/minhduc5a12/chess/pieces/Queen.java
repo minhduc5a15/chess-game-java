@@ -2,8 +2,11 @@ package com.minhduc5a12.chess.pieces;
 
 import com.minhduc5a12.chess.ChessPiece;
 import com.minhduc5a12.chess.ChessTile;
+import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Queen extends ChessPiece {
     public Queen(PieceColor color, String imagePath) {
@@ -12,34 +15,33 @@ public class Queen extends ChessPiece {
     }
 
     @Override
-    public boolean isValidMove(int startX, int startY, int endX, int endY, ChessTile[][] board) {
-        // Kiểm tra xem quân Hậu có di chuyển theo hàng ngang, dọc hoặc chéo không
-        int dx = Math.abs(endX - startX);
-        int dy = Math.abs(endY - startY);
+    public List<Move> generateValidMoves(int startX, int startY, ChessTile[][] board) {
+        List<Move> validMoves = new ArrayList<>();
 
-        if (dx != 0 && dy != 0 && dx != dy) {
-            return false; // Quân Hậu chỉ di chuyển theo hàng ngang, dọc hoặc chéo
-        }
+        // Các hướng di chuyển (ngang, dọc, chéo)
+        int[][] directions = {
+            {1, 0}, {-1, 0}, {0, 1}, {0, -1}, // Ngang và dọc
+            {1, 1}, {1, -1}, {-1, 1}, {-1, -1} // Chéo
+        };
 
-        // Kiểm tra xem có quân cờ nào chặn đường không
-        int directionX = Integer.compare(endX, startX); // Hướng di chuyển theo cột
-        int directionY = Integer.compare(endY, startY); // Hướng di chuyển theo hàng
-
-        int x = startX + directionX;
-        int y = startY + directionY;
-        while (x != endX || y != endY) {
-            // Kiểm tra xem chỉ số hàng và cột có hợp lệ không
-            if (!BoardUtils.isWithinBoard(x, y)) return false;
-
-            if (board[y][x].getPiece() != null) {
-                return false; // Có quân cờ chặn đường
+        for (int[] dir : directions) {
+            int x = startX + dir[0];
+            int y = startY + dir[1];
+            while (BoardUtils.isWithinBoard(x, y)) {
+                ChessPiece targetPiece = board[y][x].getPiece();
+                if (targetPiece == null) {
+                    validMoves.add(new Move(startX, startY, x, y));
+                } else {
+                    if (targetPiece.getColor() != getColor()) {
+                        validMoves.add(new Move(startX, startY, x, y));
+                    }
+                    break; // Dừng lại nếu gặp quân cờ chặn đường
+                }
+                x += dir[0];
+                y += dir[1];
             }
-            x += directionX;
-            y += directionY;
         }
 
-        // Kiểm tra xem ô đích có quân cờ cùng màu không
-        ChessPiece targetPiece = board[endY][endX].getPiece();
-        return targetPiece == null || targetPiece.getColor() != getColor(); // Không thể bắt quân cùng màu
+        return validMoves;
     }
 }

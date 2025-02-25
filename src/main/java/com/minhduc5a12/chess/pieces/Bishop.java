@@ -2,38 +2,43 @@ package com.minhduc5a12.chess.pieces;
 
 import com.minhduc5a12.chess.ChessPiece;
 import com.minhduc5a12.chess.ChessTile;
+import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Bishop extends ChessPiece {
-
     public Bishop(PieceColor color, String imagePath) {
         super(color, imagePath);
-        setPieceValue(3);
+        this.setPieceValue(3);
     }
 
     @Override
-    public boolean isValidMove(int startX, int startY, int endX, int endY, ChessTile[][] board) {
-        int dx = Math.abs(endX - startX);
-        int dy = Math.abs(endY - startY);
-        if (dx != dy) {
-            return false;
-        }
+    public List<Move> generateValidMoves(int startX, int startY, ChessTile[][] board) {
+        List<Move> validMoves = new ArrayList<>();
 
-        int directionX = (endX > startX) ? 1 : -1;
-        int directionY = (endY > startY) ? 1 : -1;
+        // Các hướng di chuyển theo đường chéo
+        int[][] directions = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 
-        int x = startX + directionX;
-        int y = startY + directionY;
-        while (x != endX && y != endY) {
-            if (!BoardUtils.isWithinBoard(x, y) || board[y][x].getPiece() != null) {
-                return false;
+        for (int[] dir : directions) {
+            int x = startX + dir[0];
+            int y = startY + dir[1];
+            while (BoardUtils.isWithinBoard(x, y)) {
+                ChessPiece targetPiece = board[y][x].getPiece();
+                if (targetPiece == null) {
+                    validMoves.add(new Move(startX, startY, x, y));
+                } else {
+                    if (targetPiece.getColor() != getColor()) {
+                        validMoves.add(new Move(startX, startY, x, y));
+                    }
+                    break; // Dừng lại nếu gặp quân cờ chặn đường
+                }
+                x += dir[0];
+                y += dir[1];
             }
-            x += directionX;
-            y += directionY;
         }
 
-        ChessPiece targetPiece = board[endY][endX].getPiece();
-        return targetPiece == null || targetPiece.getColor() != getColor();
+        return validMoves;
     }
 }

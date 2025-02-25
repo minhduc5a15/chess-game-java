@@ -2,10 +2,12 @@ package com.minhduc5a12.chess.utils;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 
 public class SoundPlayer {
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(SoundPlayer.class);
 
     /**
      * Phát một file âm thanh MP3 từ đường dẫn trong thư mục resources.
@@ -28,12 +30,12 @@ public class SoundPlayer {
                     player.play();
                     player.close();
                 } catch (JavaLayerException e) {
-                    e.printStackTrace();
+                    logger.error("Error playing sound", e);
                 }
             }).start();
 
         } catch (JavaLayerException e) {
-            e.printStackTrace();
+            logger.error("Error playing sound", e);
         }
     }
 
