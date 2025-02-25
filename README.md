@@ -1,13 +1,13 @@
 # CHESS GAME
 
-- Chạy chương trình
+- **Chạy chương trình**
 
-```shell
-   mvn clean compile exec:java
-```
+    ```shell
+    mvn clean compile exec:java
+    ```
 
-- Build chương trình
+- **Build**
 
-```shell
-   mvn clean package
-```
+    ```shell
+    mvn clean package
+    ```
