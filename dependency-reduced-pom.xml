@@ -27,6 +27,21 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <mainClass>com.minhduc5a12.chess.ChessGame</mainClass>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>
@@ -43,4 +58,8 @@
       </exclusions>
     </dependency>
   </dependencies>
+  <properties>
+    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>21</maven.compiler.source>
+  </properties>
 </project>

@@ -10,10 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import javax.swing.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.swing.*;
 
 public class GameEngine {
     private final ChessTile[][] board;
@@ -63,8 +64,7 @@ public class GameEngine {
                         logger.error("Error initializing piece at position [{}, {}]: {}", col, row, e.getMessage(), e);
                     }
                 }
-            } else if (positions instanceof int[][]) {
-                int[][] posArray = (int[][]) positions;
+            } else if (positions instanceof int[][] posArray) {
                 for (int[] pos : posArray) {
                     int row = pos[0];
                     int col = pos[1];
@@ -117,6 +117,12 @@ public class GameEngine {
         board[startY][startX].setPiece(null);
         piece.setHasMoved(true);
 
+        if (targetPiece != null) {
+            piecePositions.remove(targetPiece);
+        }
+
+        piecePositions.put(piece, new int[]{endX, endY});
+
         // Kiểm tra và xử lý phong cấp cho Tốt
         if (piece instanceof Pawn) {
             if ((piece.getColor() == PieceColor.WHITE && endY == 0) || (piece.getColor() == PieceColor.BLACK && endY == 7)) {
@@ -160,18 +166,18 @@ public class GameEngine {
         int choice = JOptionPane.showOptionDialog(null, "Chọn quân để phong cấp:", "Phong cấp", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
 
         String imagePathPrefix = color == PieceColor.WHITE ? "images/white_" : "images/black_";
-        switch (choice) {
-            case 0: // Hậu
-                return new Queen(color, imagePathPrefix + "queen.png");
-            case 1: // Xe
-                return new Rook(color, imagePathPrefix + "rook.png");
-            case 2: // Mã
-                return new Knight(color, imagePathPrefix + "knight.png");
-            case 3: // Tượng
-                return new Bishop(color, imagePathPrefix + "bishop.png");
-            default: // Mặc định là Hậu nếu người chơi không chọn
-                return new Queen(color, imagePathPrefix + "queen.png");
-        }
+        return switch (choice) {
+            case 0 -> // Hậu
+                    new Queen(color, imagePathPrefix + "queen.png");
+            case 1 -> // Xe
+                    new Rook(color, imagePathPrefix + "rook.png");
+            case 2 -> // Mã
+                    new Knight(color, imagePathPrefix + "knight.png");
+            case 3 -> // Tượng
+                    new Bishop(color, imagePathPrefix + "bishop.png");
+            default -> // Mặc định là Hậu nếu người chơi không chọn
+                    new Queen(color, imagePathPrefix + "queen.png");
+        };
     }
 
     private void performCastling(int row, int kingEndX) {

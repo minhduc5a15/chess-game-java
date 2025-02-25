@@ -7,6 +7,10 @@
     <version>1.0-SNAPSHOT</version>
     <name>chess</name>
     <url>https://maven.apache.org</url>
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -18,6 +22,16 @@
             <groupId>javazoom</groupId>
             <artifactId>jlayer</artifactId>
             <version>1.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.7</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.4.12</version>
         </dependency>
     </dependencies>
     <build>
@@ -42,6 +56,21 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>com.minhduc5a12.chess.ChessGame</mainClass>
+                </configuration>
             </plugin>
         </plugins>
     </build>
