@@ -17,6 +17,7 @@ public class ChessTile extends JPanel {
     private ChessPiece piece; // Quân cờ trong ô (có thể là null)
     private final int row; // Hàng của ô cờ
     private final int col; // Cột của ô cờ
+    private boolean isEnemyHighlighted = false;
     private boolean isHighlighted = false; // Trạng thái highlight
     private boolean isSelected = false; // Trạng thái được chọn
     private static final Logger logger = LoggerFactory.getLogger(ChessTile.class);
@@ -55,13 +56,20 @@ public class ChessTile extends JPanel {
         repaint(); // Vẽ lại ô cờ khi trạng thái highlight thay đổi
     }
 
+    public void setEnemyHighlighted(boolean enemyHighlighted) {
+        this.isEnemyHighlighted = enemyHighlighted;
+        repaint(); // Vẽ lại ô cờ khi trạng thái thay đổi
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        Graphics2D g2d = (Graphics2D) g;
+
         if (isSelected) {
-            g.setColor(new Color(56, 72, 79, 160));
-            g.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+            g2d.setColor(new Color(56, 72, 79, 160));
+            g2d.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
         }
 
         if (piece != null) {
@@ -70,13 +78,19 @@ public class ChessTile extends JPanel {
 
 
         if (isHighlighted) {
-            g.setColor(new Color(0, 0, 0, 100));
+            g2d.setColor(new Color(0, 0, 0, 100));
             int circleX = (TILE_SIZE - CIRCLE_SIZE) / 2;
             int circleY = (TILE_SIZE - CIRCLE_SIZE) / 2;
-            g.fillOval(circleX, circleY, CIRCLE_SIZE, CIRCLE_SIZE);
+            g2d.fillOval(circleX, circleY, CIRCLE_SIZE, CIRCLE_SIZE);
+        } else if (isEnemyHighlighted) {
+            g2d.setColor(new Color(255, 0, 0, 150));
+            g2d.setStroke(new BasicStroke(7));
+            int circleX = (TILE_SIZE - 90) / 2;
+            int circleY = (TILE_SIZE - 90) / 2;
+            g2d.drawOval(circleX, circleY, 90, 90);
+            g2d.setStroke(new BasicStroke(1));
         }
 
-        repaint();
     }
 
     private void drawPiece(Graphics g) {

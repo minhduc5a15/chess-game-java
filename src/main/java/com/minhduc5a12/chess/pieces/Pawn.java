@@ -50,18 +50,17 @@ public class Pawn extends ChessPiece {
 
         // Thêm "en passant"
         Move lastMove = gameEngine.getLastMove();
-        if (lastMove != null && board[lastMove.getEndY()][lastMove.getEndX()].getPiece() instanceof Pawn) {
-            int lastStartY = lastMove.getStartY();
-            int lastEndY = lastMove.getEndY();
-            int lastEndX = lastMove.getEndX();
+        if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn) {
+            int lastStartY = lastMove.startY();
+            int lastEndY = lastMove.endY();
+            int lastEndX = lastMove.endX();
 
             // Kiểm tra Tốt đối phương vừa đi 2 ô
             if (Math.abs(lastStartY - lastEndY) == 2) {
                 // Kiểm tra Tốt đối phương nằm cạnh Tốt của mình
                 if (lastEndY == startY && (lastEndX == startX - 1 || lastEndX == startX + 1)) {
                     int enPassantY = startY + direction;
-                    int enPassantX = lastEndX;
-                    validMoves.add(new Move(startX, startY, enPassantX, enPassantY));
+                    validMoves.add(new Move(startX, startY, lastEndX, enPassantY));
                 }
             }
         }

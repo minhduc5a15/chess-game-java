@@ -72,52 +72,60 @@ public class ChessBoard extends JPanel {
     }
 
     private class ChessMouseListener extends MouseAdapter {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            int col = e.getX() / TILE_SIZE;
-            int row = e.getY() / TILE_SIZE;
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        int col = e.getX() / TILE_SIZE;
+        int row = e.getY() / TILE_SIZE;
 
-            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-                ChessTile clickedTile = tiles[row][col];
+        if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+            ChessTile clickedTile = tiles[row][col];
 
-                if (selectedTile == null) {
-                    // Chọn ô A (ô chứa quân cờ)
-                    if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameEngine.getCurrentPlayerColor()) {
-                        selectedTile = clickedTile;
-                        selectedTile.setSelected(true);
+            if (selectedTile == null) {
+                // Chọn ô A (ô chứa quân cờ)
+                if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameEngine.getCurrentPlayerColor()) {
+                    selectedTile = clickedTile;
+                    selectedTile.setSelected(true);
 
-                        // Lấy danh sách các nước đi hợp lệ và highlight các ô
-                        List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameEngine.getBoard());
-                        for (Move move : validMoves) {
-                            int endX = move.getEndX();
-                            int endY = move.getEndY();
-                            tiles[endY][endX].setHighlighted(true);
-                        }
-                        repaint(); // Vẽ lại bàn cờ để hiển thị highlight
-                    }
-                } else {
-                    // Chọn ô B (ô đích)
-                    ChessPiece selectedPiece = selectedTile.getPiece();
-
-                    // Kiểm tra nước đi hợp lệ
-                    if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameEngine.getBoard())) {
-                        // Di chuyển quân cờ
-                        gameEngine.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
-                        repaint(); // Vẽ lại bàn cờ sau khi di chuyển
-                    }
-
-                    // Bỏ đánh dấu ô A và xóa highlight
-                    selectedTile.setSelected(false);
-                    for (int y = 0; y < BOARD_SIZE; y++) {
-                        for (int x = 0; x < BOARD_SIZE; x++) {
-                            tiles[y][x].setHighlighted(false);
+                    // Lấy danh sách các nước đi hợp lệ và highlight các ô
+                    List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameEngine.getBoard());
+                    for (Move move : validMoves) {
+                        int endX = move.endX();
+                        int endY = move.endY();
+                        ChessTile targetTile = tiles[endY][endX];
+                        if (targetTile.getPiece() != null && targetTile.getPiece().getColor() != gameEngine.getCurrentPlayerColor()) {
+                            // Nếu ô đích có quân đối thủ
+                            targetTile.setEnemyHighlighted(true);
+                        } else {
+                            // Nếu ô đích trống
+                            targetTile.setHighlighted(true);
                         }
                     }
-                    selectedTile = null;
+                    repaint(); // Vẽ lại bàn cờ để hiển thị highlight
                 }
+            } else {
+                // Chọn ô B (ô đích)
+                ChessPiece selectedPiece = selectedTile.getPiece();
+
+                // Kiểm tra nước đi hợp lệ
+                if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameEngine.getBoard())) {
+                    // Di chuyển quân cờ
+                    gameEngine.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
+                    repaint(); // Vẽ lại bàn cờ sau khi di chuyển
+                }
+
+                // Bỏ đánh dấu ô A và xóa highlight
+                selectedTile.setSelected(false);
+                for (int y = 0; y < BOARD_SIZE; y++) {
+                    for (int x = 0; x < BOARD_SIZE; x++) {
+                        tiles[y][x].setHighlighted(false);
+                        tiles[y][x].setEnemyHighlighted(false); // Xóa cả EnemyHighlighted
+                    }
+                }
+                selectedTile = null;
             }
         }
     }
+}
 
     private class ChessMouseMotionListener extends MouseMotionAdapter {
         @Override
@@ -137,5 +145,4 @@ public class ChessBoard extends JPanel {
             }
         }
     }
-
 }

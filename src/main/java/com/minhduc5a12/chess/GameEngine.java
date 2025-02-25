@@ -106,8 +106,8 @@ public class GameEngine {
         boolean isEnPassant = false;
         if (piece instanceof Pawn && targetPiece == null && startX != endX) {
             Move lastMove = getLastMove();
-            if (lastMove != null && board[lastMove.getEndY()][lastMove.getEndX()].getPiece() instanceof Pawn && Math.abs(lastMove.getStartY() - lastMove.getEndY()) == 2 && lastMove.getEndX() == endX && lastMove.getEndY() == startY) {
-                board[lastMove.getEndY()][lastMove.getEndX()].setPiece(null);
+            if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2 && lastMove.endX() == endX && lastMove.endY() == startY) {
+                board[lastMove.endY()][lastMove.endX()].setPiece(null);
                 isEnPassant = true;
             }
         }
