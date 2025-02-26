@@ -25,11 +25,13 @@ public class GameEngine {
     private static final Logger logger = LoggerFactory.getLogger(GameEngine.class);
 
     public GameEngine() {
+        long start = System.currentTimeMillis();
         this.board = new ChessTile[8][8];
         this.currentPlayerColor = PieceColor.WHITE;
         this.piecePositions = new HashMap<>();
         initializeBoard();
         initializePieces();
+        logger.info("GameEngine initialization took {} ms", System.currentTimeMillis() - start);
     }
 
     public void setOnTurnChange(Consumer<PieceColor> onTurnChange) {
@@ -90,19 +92,22 @@ public class GameEngine {
 
 
     public void makeMove(int startX, int startY, int endX, int endY) {
+        long start = System.currentTimeMillis();
         ChessPiece piece = board[startY][startX].getPiece();
-        if (piece == null) {
-            return;
-        }
+        if (piece == null) return;
 
         ChessPiece targetPiece = board[endY][endX].getPiece();
 
+        long checkStart = System.currentTimeMillis();
         if (!isMoveValidUnderCheck(startX, startY, endX, endY)) {
             SoundPlayer.playMoveIllegal();
+            logger.info("isMoveValidUnderCheck took {} ms", System.currentTimeMillis() - checkStart);
+            logger.info("makeMove (invalid) took {} ms", System.currentTimeMillis() - start);
             return;
         }
+        logger.info("isMoveValidUnderCheck took {} ms", System.currentTimeMillis() - checkStart);
 
-        // Xử lý "en passant"
+        // Logic di chuyển
         boolean isEnPassant = false;
         if (piece instanceof Pawn && targetPiece == null && startX != endX) {
             Move lastMove = getLastMove();
@@ -112,53 +117,43 @@ public class GameEngine {
             }
         }
 
-        // Di chuyển quân cờ
         board[endY][endX].setPiece(piece);
         board[startY][startX].setPiece(null);
         piece.setHasMoved(true);
 
-        if (targetPiece != null) {
-            piecePositions.remove(targetPiece);
-        }
-
+        if (targetPiece != null) piecePositions.remove(targetPiece);
         piecePositions.put(piece, new int[]{endX, endY});
 
-        // Kiểm tra và xử lý phong cấp cho Tốt
         if (piece instanceof Pawn) {
             if ((piece.getColor() == PieceColor.WHITE && endY == 0) || (piece.getColor() == PieceColor.BLACK && endY == 7)) {
                 ChessPiece promotedPiece = promotePawn(endX, endY, piece.getColor());
                 board[endY][endX].setPiece(promotedPiece);
-                piecePositions.remove(piece); // Xóa Tốt cũ khỏi piecePositions
-                piecePositions.put(promotedPiece, new int[]{endX, endY}); // Thêm quân mới
+                piecePositions.remove(piece);
+                piecePositions.put(promotedPiece, new int[]{endX, endY});
             }
         }
 
-        // Phát âm thanh
+        long soundStart = System.currentTimeMillis();
         if (isEnPassant || targetPiece != null) {
             SoundPlayer.playCaptureSound();
         } else {
             SoundPlayer.playMoveSound();
         }
+        logger.info("Sound playing took {} ms", System.currentTimeMillis() - soundStart);
 
-        // Xử lý nhập thành
         if (piece instanceof King && Math.abs(endX - startX) == 2) {
             performCastling(startY, endX);
             SoundPlayer.playCastleSound();
         }
 
-        // Lưu nước đi cuối cùng
         lastMove = new Move(startX, startY, endX, endY);
-
-        // Đổi lượt chơi
         currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
 
-        if (onTurnChange != null) {
-            onTurnChange.accept(currentPlayerColor);
-        }
+        if (onTurnChange != null) onTurnChange.accept(currentPlayerColor);
 
-        if (isKingInCheck(currentPlayerColor)) {
-            SoundPlayer.playMoveCheckSound();
-        }
+        if (isKingInCheck(currentPlayerColor)) SoundPlayer.playMoveCheckSound();
+
+        logger.info("makeMove took {} ms", System.currentTimeMillis() - start);
     }
 
     private ChessPiece promotePawn(int x, int y, PieceColor color) {

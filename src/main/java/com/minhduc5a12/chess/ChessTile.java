@@ -1,32 +1,25 @@
 package com.minhduc5a12.chess;
 
-import java.awt.*;
 import javax.swing.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.awt.*;
 
 public class ChessTile extends JPanel {
     private static final int TILE_SIZE = 100;
-    private static final int PIECE_SIZE = 95; // Kích thước quân cờ
-    private static final int CIRCLE_SIZE = 30; // Kích thước hình tròn
+    private static final int PIECE_SIZE = 95;
+    private static final int CIRCLE_SIZE = 30;
 
-    private ChessPiece piece; // Quân cờ trong ô (có thể là null)
-    private final int row; // Hàng của ô cờ
-    private final int col; // Cột của ô cờ
+    private ChessPiece piece;
+    private final int row;
+    private final int col;
     private boolean isEnemyHighlighted = false;
-    private boolean isHighlighted = false; // Trạng thái highlight
-    private boolean isSelected = false; // Trạng thái được chọn
-    private static final Logger logger = LoggerFactory.getLogger(ChessTile.class);
+    private boolean isHighlighted = false;
+    private boolean isSelected = false;
 
     public ChessTile(int row, int col) {
         this.row = row;
         this.col = col;
         setPreferredSize(new Dimension(TILE_SIZE, TILE_SIZE));
-        setOpaque(false); // Đặt ô cờ trong suốt để hiển thị ảnh bàn cờ
+        setOpaque(false);
     }
 
     public ChessPiece getPiece() {
@@ -35,7 +28,7 @@ public class ChessTile extends JPanel {
 
     public void setPiece(ChessPiece piece) {
         this.piece = piece;
-        repaint(); // Vẽ lại ô cờ khi có thay đổi
+        repaint();
     }
 
     public int getRow() {
@@ -48,23 +41,22 @@ public class ChessTile extends JPanel {
 
     public void setSelected(boolean selected) {
         this.isSelected = selected;
-        repaint(); // Vẽ lại ô cờ khi trạng thái chọn thay đổi
+        repaint();
     }
 
     public void setHighlighted(boolean highlighted) {
         this.isHighlighted = highlighted;
-        repaint(); // Vẽ lại ô cờ khi trạng thái highlight thay đổi
+        repaint();
     }
 
     public void setEnemyHighlighted(boolean enemyHighlighted) {
         this.isEnemyHighlighted = enemyHighlighted;
-        repaint(); // Vẽ lại ô cờ khi trạng thái thay đổi
+        repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-
         Graphics2D g2d = (Graphics2D) g;
 
         if (isSelected) {
@@ -75,7 +67,6 @@ public class ChessTile extends JPanel {
         if (piece != null) {
             drawPiece(g);
         }
-
 
         if (isHighlighted) {
             g2d.setColor(new Color(0, 0, 0, 100));
@@ -90,28 +81,14 @@ public class ChessTile extends JPanel {
             g2d.drawOval(circleX, circleY, 90, 90);
             g2d.setStroke(new BasicStroke(1));
         }
-
     }
 
     private void drawPiece(Graphics g) {
-        try {
-            ClassLoader classLoader = getClass().getClassLoader();
-            java.net.URL imageUrl = classLoader.getResource(piece.getImagePath());
-
-            if (imageUrl == null) {
-                throw new IOException("Cannot find image: " + piece.getImagePath());
-            }
-            BufferedImage image = ImageIO.read(imageUrl);
-
-            Image resizedImage = image.getScaledInstance(PIECE_SIZE, PIECE_SIZE, Image.SCALE_SMOOTH);
-
+        Image image = piece.getImage();
+        if (image != null) {
             int offsetX = (TILE_SIZE - PIECE_SIZE) / 2;
             int offsetY = (TILE_SIZE - PIECE_SIZE) / 2;
-
-            // Vẽ hình ảnh quân cờ
-            g.drawImage(resizedImage, offsetX, offsetY, null);
-        } catch (IOException e) {
-            logger.error("Failed to load piece image", e);
+            g.drawImage(image, offsetX, offsetY, null);
         }
     }
 }
