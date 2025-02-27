@@ -8,6 +8,7 @@ import com.minhduc5a12.chess.pieces.King;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,10 @@ public class BoardUtils {
             return false;
         }
 
-        for (Map.Entry<ChessPiece, int[]> entry : piecePositions.entrySet()) {
+        // Lấy danh sách quân cờ của bên bị chiếu trước để tránh lặp trực tiếp trên Map
+        List<Map.Entry<ChessPiece, int[]>> pieces = new ArrayList<>(piecePositions.entrySet());
+
+        for (Map.Entry<ChessPiece, int[]> entry : pieces) {
             ChessPiece piece = entry.getKey();
             if (piece.getColor() == color) {
                 int[] position = entry.getValue();
@@ -65,19 +69,21 @@ public class BoardUtils {
                     int endX = move.endX();
                     int endY = move.endY();
 
+                    // Thử di chuyển tạm thời trên bàn cờ
                     ChessPiece targetPiece = board[endY][endX].getPiece();
                     board[endY][endX].setPiece(piece);
                     board[startY][startX].setPiece(null);
-                    int[] oldPos = piecePositions.get(piece);
-                    piecePositions.put(piece, new int[]{endX, endY});
-                    if (targetPiece != null) piecePositions.remove(targetPiece);
 
-                    boolean stillInCheck = isKingInCheck(board, color, piecePositions);
+                    // Tạm lưu trạng thái để không sửa Map gốc
+                    Map<ChessPiece, int[]> tempPositions = new java.util.HashMap<>(piecePositions);
+                    tempPositions.put(piece, new int[]{endX, endY});
+                    if (targetPiece != null) tempPositions.remove(targetPiece);
 
+                    boolean stillInCheck = isKingInCheck(board, color, tempPositions);
+
+                    // Hoàn tác
                     board[startY][startX].setPiece(piece);
                     board[endY][endX].setPiece(targetPiece);
-                    piecePositions.put(piece, oldPos);
-                    if (targetPiece != null) piecePositions.put(targetPiece, new int[]{endX, endY});
 
                     if (!stillInCheck) {
                         logger.info("Escape found for {} with move ({},{}) to ({},{})", color, startX, startY, endX, endY);
