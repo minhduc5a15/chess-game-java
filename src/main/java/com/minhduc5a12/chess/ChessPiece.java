@@ -14,11 +14,13 @@ public abstract class ChessPiece {
     private final Image image; // Lưu ảnh đã resize
     private int pieceValue = 0;
     private boolean hasMoved = false;
+    protected final GameEngine gameEngine;
 
-    public ChessPiece(PieceColor color, String imagePath) {
+    public ChessPiece(PieceColor color, String imagePath, GameEngine gameEngine) {
         this.color = color;
         this.imagePath = imagePath;
         this.image = ImageLoader.getImage(imagePath); // Tải và resize ngay khi khởi tạo
+        this.gameEngine = gameEngine;
     }
 
     public Image getImage() {

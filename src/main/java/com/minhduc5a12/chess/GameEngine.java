@@ -59,7 +59,7 @@ public class GameEngine {
                 int row = (int) positions;
                 for (int col = 0; col < 8; col++) {
                     try {
-                        ChessPiece piece = pieceClass == Pawn.class ? new Pawn(color, imagePath, this) : (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class).newInstance(color, imagePath);
+                        ChessPiece piece = pieceClass == Pawn.class ? new Pawn(color, imagePath, this) : (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
                         piecePositions.put(piece, new int[]{col, row});
                     } catch (Exception e) {
@@ -71,7 +71,7 @@ public class GameEngine {
                     int row = pos[0];
                     int col = pos[1];
                     try {
-                        ChessPiece piece = (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class).newInstance(color, imagePath);
+                        ChessPiece piece = (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
                         piecePositions.put(piece, new int[]{col, row});
                     } catch (Exception e) {
@@ -163,15 +163,15 @@ public class GameEngine {
         String imagePathPrefix = color == PieceColor.WHITE ? "images/white_" : "images/black_";
         return switch (choice) {
             case 0 -> // Hậu
-                    new Queen(color, imagePathPrefix + "queen.png");
+                    new Queen(color, imagePathPrefix + "queen.png", this);
             case 1 -> // Xe
-                    new Rook(color, imagePathPrefix + "rook.png");
+                    new Rook(color, imagePathPrefix + "rook.png", this);
             case 2 -> // Mã
-                    new Knight(color, imagePathPrefix + "knight.png");
+                    new Knight(color, imagePathPrefix + "knight.png", this);
             case 3 -> // Tượng
-                    new Bishop(color, imagePathPrefix + "bishop.png");
+                    new Bishop(color, imagePathPrefix + "bishop.png", this);
             default -> // Mặc định là Hậu nếu người chơi không chọn
-                    new Queen(color, imagePathPrefix + "queen.png");
+                    new Queen(color, imagePathPrefix + "queen.png", this);
         };
     }
 
@@ -210,6 +210,10 @@ public class GameEngine {
 
     public void updatePiecePosition(ChessPiece piece, int newX, int newY) {
         piecePositions.put(piece, new int[]{newX, newY});
+    }
+
+    public Map<ChessPiece, int[]> getPiecePositions() {
+        return piecePositions;
     }
 
     public boolean isMoveValidUnderCheck(int startX, int startY, int endX, int endY) {

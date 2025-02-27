@@ -69,7 +69,7 @@ public class ChessTile extends JPanel {
         }
 
         if (isHighlighted) {
-            g2d.setColor(new Color(0, 0, 0, 100));
+            g2d.setColor(new Color(255, 255, 255, 100));
             int circleX = (TILE_SIZE - CIRCLE_SIZE) / 2;
             int circleY = (TILE_SIZE - CIRCLE_SIZE) / 2;
             g2d.fillOval(circleX, circleY, CIRCLE_SIZE, CIRCLE_SIZE);
