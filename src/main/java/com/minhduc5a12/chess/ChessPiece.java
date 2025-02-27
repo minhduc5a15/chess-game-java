@@ -9,7 +9,7 @@ import java.awt.*;
 public abstract class ChessPiece {
     private final PieceColor color;
     private final String imagePath;
-    private final Image image; // Lưu ảnh đã resize
+    private final Image image;
     private int pieceValue = 0;
     private boolean hasMoved = false;
     protected final GameEngine gameEngine;
@@ -17,7 +17,7 @@ public abstract class ChessPiece {
     public ChessPiece(PieceColor color, String imagePath, GameEngine gameEngine) {
         this.color = color;
         this.imagePath = imagePath;
-        this.image = ImageLoader.getImage(imagePath); // Tải và resize ngay khi khởi tạo
+        this.image = ImageLoader.getImage(imagePath);
         this.gameEngine = gameEngine;
     }
 
@@ -25,7 +25,6 @@ public abstract class ChessPiece {
         return image;
     }
 
-    // Các getter/setter và method khác giữ nguyên
     public PieceColor getColor() {
         return color;
     }
