@@ -1,5 +1,7 @@
 # CHESS GAME
 
+- **Java**: 21
+
 - **Chạy chương trình**
 
     ```shell
