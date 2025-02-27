@@ -61,7 +61,7 @@ public class GameEngine {
                     try {
                         ChessPiece piece = pieceClass == Pawn.class ? new Pawn(color, imagePath, this) : (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
-                        piecePositions.put(piece, new int[]{col, row});
+                        updatePiecePosition(piece, col, row);
                     } catch (Exception e) {
                         logger.error("Error initializing piece at position [{}, {}]: {}", col, row, e.getMessage(), e);
                     }
@@ -73,7 +73,7 @@ public class GameEngine {
                     try {
                         ChessPiece piece = (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
-                        piecePositions.put(piece, new int[]{col, row});
+                        updatePiecePosition(piece, col, row);
                     } catch (Exception e) {
                         logger.error("Error initializing piece at position [{}, {}]: {}", col, row, e.getMessage(), e);
                     }
@@ -90,7 +90,6 @@ public class GameEngine {
         return currentPlayerColor;
     }
 
-
     public void makeMove(int startX, int startY, int endX, int endY) {
         long start = System.currentTimeMillis();
         ChessPiece piece = board[startY][startX].getPiece();
@@ -98,48 +97,51 @@ public class GameEngine {
 
         ChessPiece targetPiece = board[endY][endX].getPiece();
 
-        long checkStart = System.currentTimeMillis();
+        logger.info("Attempting move: {} from ({},{}) to ({},{})", piece, startX, startY, endX, endY);
         if (!isMoveValidUnderCheck(startX, startY, endX, endY)) {
             SoundPlayer.playMoveIllegal();
-            logger.info("isMoveValidUnderCheck took {} ms", System.currentTimeMillis() - checkStart);
+            logger.info("Move invalid under check");
             logger.info("makeMove (invalid) took {} ms", System.currentTimeMillis() - start);
             return;
         }
-        logger.info("isMoveValidUnderCheck took {} ms", System.currentTimeMillis() - checkStart);
 
-        // Logic di chuyển
-        boolean isEnPassant = false;
-        if (piece instanceof Pawn && targetPiece == null && startX != endX) {
-            Move lastMove = getLastMove();
-            if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2 && lastMove.endX() == endX && lastMove.endY() == startY) {
-                board[lastMove.endY()][lastMove.endX()].setPiece(null);
-                isEnPassant = true;
-            }
-        }
-
+        // Thử di chuyển để kiểm tra checkmate trước
         board[endY][endX].setPiece(piece);
         board[startY][startX].setPiece(null);
-        piece.setHasMoved(true);
+        if (targetPiece != null) removePiece(targetPiece);
+        updatePiecePosition(piece, endX, endY);
 
-        if (targetPiece != null) piecePositions.remove(targetPiece);
-        piecePositions.put(piece, new int[]{endX, endY});
+        PieceColor opponentColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        if (isCheckmate(opponentColor)) {
+            SoundPlayer.playMoveCheckSound();
+            String winner = currentPlayerColor == PieceColor.WHITE ? "Trắng" : "Đen";
+            logger.info("Checkmate detected! {} wins", winner);
+            JOptionPane.showMessageDialog(null, "Chiếu bí! Bên " + winner + " thắng!", "Kết thúc ván cờ", JOptionPane.INFORMATION_MESSAGE);
+            logger.info("makeMove (checkmate) took {} ms", System.currentTimeMillis() - start);
+            return;
+        }
 
         if (piece instanceof Pawn) {
             if ((piece.getColor() == PieceColor.WHITE && endY == 0) || (piece.getColor() == PieceColor.BLACK && endY == 7)) {
                 ChessPiece promotedPiece = promotePawn(endX, endY, piece.getColor());
-                board[endY][endX].setPiece(promotedPiece);
-                piecePositions.remove(piece);
-                piecePositions.put(promotedPiece, new int[]{endX, endY});
+                removePiece(piece);
+                updatePiecePosition(promotedPiece, endX, endY);
             }
         }
 
-        long soundStart = System.currentTimeMillis();
-        if (isEnPassant || targetPiece != null) {
+        if (piece instanceof Pawn && targetPiece == null && startX != endX) {
+            Move lastMove = getLastMove();
+            if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2 && lastMove.endX() == endX && lastMove.endY() == startY) {
+                board[lastMove.endY()][lastMove.endX()].setPiece(null);
+                SoundPlayer.playCaptureSound();
+            } else {
+                SoundPlayer.playMoveSound();
+            }
+        } else if (targetPiece != null) {
             SoundPlayer.playCaptureSound();
         } else {
             SoundPlayer.playMoveSound();
         }
-        logger.info("Sound playing took {} ms", System.currentTimeMillis() - soundStart);
 
         if (piece instanceof King && Math.abs(endX - startX) == 2) {
             performCastling(startY, endX);
@@ -151,7 +153,10 @@ public class GameEngine {
 
         if (onTurnChange != null) onTurnChange.accept(currentPlayerColor);
 
-        if (isKingInCheck(currentPlayerColor)) SoundPlayer.playMoveCheckSound();
+        if (isKingInCheck(currentPlayerColor)) {
+            logger.info("King of {} in check", currentPlayerColor);
+            SoundPlayer.playMoveCheckSound();
+        }
 
         logger.info("makeMove took {} ms", System.currentTimeMillis() - start);
     }
@@ -185,7 +190,7 @@ public class GameEngine {
         board[row][rookEndX].setPiece(rook);
         rookStartTile.setPiece(null);
         rook.setHasMoved(true);
-        piecePositions.put(rook, new int[]{rookEndX, row}); // Cập nhật vị trí Xe
+        updatePiecePosition(rook, rookEndX, row);
     }
 
     public boolean isValidMove(int startX, int startY, int endX, int endY) {
@@ -210,6 +215,13 @@ public class GameEngine {
 
     public void updatePiecePosition(ChessPiece piece, int newX, int newY) {
         piecePositions.put(piece, new int[]{newX, newY});
+        board[newY][newX].setPiece(piece);
+    }
+
+    public void removePiece(ChessPiece piece) {
+        int[] position = piecePositions.get(piece);
+        piecePositions.remove(piece);
+        board[position[1]][position[0]].setPiece(null);
     }
 
     public Map<ChessPiece, int[]> getPiecePositions() {

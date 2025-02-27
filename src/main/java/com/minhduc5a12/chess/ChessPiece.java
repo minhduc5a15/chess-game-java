@@ -4,9 +4,7 @@ import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.utils.ImageLoader;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.io.IOException;
 
 public abstract class ChessPiece {
     private final PieceColor color;

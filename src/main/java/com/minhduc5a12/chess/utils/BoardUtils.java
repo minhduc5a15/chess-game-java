@@ -3,8 +3,12 @@ package com.minhduc5a12.chess.utils;
 import com.minhduc5a12.chess.ChessPiece;
 import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.pieces.King;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 public class BoardUtils {
@@ -30,6 +34,7 @@ public class BoardUtils {
                         int enemyY = enemyPosition[1];
 
                         if (enemyPiece.isValidMove(enemyX, enemyY, kingX, kingY, board)) {
+                            LoggerFactory.getLogger(BoardUtils.class).info("King of {} in check by {} at ({},{})", color, enemyPiece, enemyX, enemyY);
                             return true;
                         }
                     }
@@ -41,53 +46,47 @@ public class BoardUtils {
     }
 
     public static boolean isCheckmate(ChessTile[][] board, PieceColor color, Map<ChessPiece, int[]> piecePositions) {
+        Logger logger = LoggerFactory.getLogger(BoardUtils.class);
+        logger.info("Checking if {} is in checkmate", color);
         if (!isKingInCheck(board, color, piecePositions)) {
+            logger.info("King of {} not in check", color);
             return false;
         }
 
-        int[] kingPosition = null;
         for (Map.Entry<ChessPiece, int[]> entry : piecePositions.entrySet()) {
             ChessPiece piece = entry.getKey();
-            if (piece instanceof King && piece.getColor() == color) {
-                kingPosition = entry.getValue();
-                break;
-            }
-        }
-        if (kingPosition == null) {
-            return false;
-        }
+            if (piece.getColor() == color) {
+                int[] position = entry.getValue();
+                int startX = position[0];
+                int startY = position[1];
+                List<Move> validMoves = piece.generateValidMoves(startX, startY, board);
 
-        int kingX = kingPosition[0];
-        int kingY = kingPosition[1];
+                for (Move move : validMoves) {
+                    int endX = move.endX();
+                    int endY = move.endY();
 
-        int[][] directions = {
-            {1, 0}, {-1, 0}, {0, 1}, {0, -1},
-            {1, 1}, {1, -1}, {-1, 1}, {-1, -1}
-        };
-
-        for (int[] dir : directions) {
-            int newX = kingX + dir[0];
-            int newY = kingY + dir[1];
-
-            if (isWithinBoard(newX, newY)) {
-                ChessPiece targetPiece = board[newY][newX].getPiece();
-                if (targetPiece == null || targetPiece.getColor() != color) {
-                    ChessPiece originalPiece = board[newY][newX].getPiece();
-                    board[newY][newX].setPiece(board[kingY][kingX].getPiece());
-                    board[kingY][kingX].setPiece(null);
+                    ChessPiece targetPiece = board[endY][endX].getPiece();
+                    board[endY][endX].setPiece(piece);
+                    board[startY][startX].setPiece(null);
+                    int[] oldPos = piecePositions.get(piece);
+                    piecePositions.put(piece, new int[]{endX, endY});
+                    if (targetPiece != null) piecePositions.remove(targetPiece);
 
                     boolean stillInCheck = isKingInCheck(board, color, piecePositions);
 
-                    board[kingY][kingX].setPiece(board[newY][newX].getPiece());
-                    board[newY][newX].setPiece(originalPiece);
+                    board[startY][startX].setPiece(piece);
+                    board[endY][endX].setPiece(targetPiece);
+                    piecePositions.put(piece, oldPos);
+                    if (targetPiece != null) piecePositions.put(targetPiece, new int[]{endX, endY});
 
                     if (!stillInCheck) {
+                        logger.info("Escape found for {} with move ({},{}) to ({},{})", color, startX, startY, endX, endY);
                         return false;
                     }
                 }
             }
         }
-
+        logger.info("No escape for {}, checkmate confirmed", color);
         return true;
     }
 
@@ -95,21 +94,17 @@ public class BoardUtils {
         ChessPiece movingPiece = board[startY][startX].getPiece();
         ChessPiece targetPiece = board[endY][endX].getPiece();
 
-        // Thử di chuyển tạm thời
         board[endY][endX].setPiece(movingPiece);
         board[startY][startX].setPiece(null);
 
-        // Cập nhật piecePositions tạm thời
         int[] oldPosition = piecePositions.get(movingPiece);
         piecePositions.put(movingPiece, new int[]{endX, endY});
         if (targetPiece != null) {
             piecePositions.remove(targetPiece);
         }
 
-        // Kiểm tra chiếu
         boolean isKingInCheck = isKingInCheck(board, currentColor, piecePositions);
 
-        // Hoàn tác
         board[startY][startX].setPiece(movingPiece);
         board[endY][endX].setPiece(targetPiece);
         piecePositions.put(movingPiece, oldPosition);
