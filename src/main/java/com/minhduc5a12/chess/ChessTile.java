@@ -14,6 +14,7 @@ public class ChessTile extends JPanel {
     private boolean isEnemyHighlighted = false;
     private boolean isHighlighted = false;
     private boolean isSelected = false;
+    private boolean isRightClickHighlighted = false; // Thêm biến để đánh dấu chuột phải
 
     public ChessTile(int row, int col) {
         this.row = row;
@@ -39,6 +40,18 @@ public class ChessTile extends JPanel {
         return col;
     }
 
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public boolean isHighlighted() {
+        return isHighlighted;
+    }
+
+    public boolean isEnemyHighlighted() {
+        return isEnemyHighlighted;
+    }
+
     public void setSelected(boolean selected) {
         this.isSelected = selected;
         repaint();
@@ -54,6 +67,11 @@ public class ChessTile extends JPanel {
         repaint();
     }
 
+    public void setRightClickHighlighted(boolean rightClickHighlighted) {
+        this.isRightClickHighlighted = rightClickHighlighted;
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -61,6 +79,13 @@ public class ChessTile extends JPanel {
 
         if (isSelected) {
             g2d.setColor(new Color(56, 72, 79, 160));
+            g2d.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+        }
+
+        if (isRightClickHighlighted) {
+            Color RIGHT_CLICK_HIGHLIGHT = new Color(255, 0, 0, 100); // Đỏ nhạt hơn cho chuột phải
+
+            g2d.setColor(RIGHT_CLICK_HIGHLIGHT); // Đỏ nhạt khi click chuột phải
             g2d.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
         }
 
@@ -90,5 +115,9 @@ public class ChessTile extends JPanel {
             int offsetY = (TILE_SIZE - PIECE_SIZE) / 2;
             g.drawImage(image, offsetX, offsetY, null);
         }
+    }
+
+    public boolean isRightClickHighlighted() {
+        return isRightClickHighlighted;
     }
 }

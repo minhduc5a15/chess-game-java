@@ -48,7 +48,6 @@ public class SoundPlayer {
         }
     }
 
-    // Giữ nguyên các hàm play
     public static void playMoveSound() { playSound("sounds/move-self.mp3"); }
     public static void playCaptureSound() { playSound("sounds/capture.mp3"); }
     public static void playCastleSound() { playSound("sounds/castle.mp3"); }

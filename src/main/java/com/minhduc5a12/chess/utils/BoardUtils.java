@@ -54,7 +54,6 @@ public class BoardUtils {
             return false;
         }
 
-        // Lấy danh sách quân cờ của bên bị chiếu trước để tránh lặp trực tiếp trên Map
         List<Map.Entry<ChessPiece, int[]>> pieces = new ArrayList<>(piecePositions.entrySet());
 
         for (Map.Entry<ChessPiece, int[]> entry : pieces) {
@@ -119,5 +118,89 @@ public class BoardUtils {
         }
 
         return !isKingInCheck;
+    }
+
+    // Trường hợp 1: Lặp lại 3 lần
+    public static boolean isThreefoldRepetition(List<String> boardStates) {
+        Logger logger = LoggerFactory.getLogger(BoardUtils.class);
+        if (boardStates.size() < 9) { // Cần ít nhất 9 nước (4 lượt mỗi bên + 1) để lặp 3 lần
+            return false;
+        }
+
+        String currentState = boardStates.getLast();
+        int count = 0;
+        for (String state : boardStates) {
+            if (state.equals(currentState)) {
+                count++;
+                if (count >= 3) {
+                    logger.info("Threefold repetition detected");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Trường hợp 2: Không còn nước đi hợp lệ (dead position)
+    public static boolean isDeadPosition(ChessTile[][] board, PieceColor color, Map<ChessPiece, int[]> piecePositions) {
+        Logger logger = LoggerFactory.getLogger(BoardUtils.class);
+        logger.info("Checking if {} has no legal moves (dead position)", color);
+
+        if (isKingInCheck(board, color, piecePositions)) {
+            return false; // Nếu bị chiếu thì không phải dead position
+        }
+
+        List<Map.Entry<ChessPiece, int[]>> pieces = new ArrayList<>(piecePositions.entrySet());
+        for (Map.Entry<ChessPiece, int[]> entry : pieces) {
+            ChessPiece piece = entry.getKey();
+            if (piece.getColor() == color) {
+                int[] position = entry.getValue();
+                int startX = position[0];
+                int startY = position[1];
+
+                if (!isWithinBoard(startX, startY)) {
+                    logger.error("Invalid start position for piece {}: ({}, {})", piece, startX, startY);
+                    continue;
+                }
+
+                List<Move> validMoves = piece.generateValidMoves(startX, startY, board);
+
+                for (Move move : validMoves) {
+                    int endX = move.endX();
+                    int endY = move.endY();
+                    if (!isWithinBoard(endX, endY)) {
+                        logger.error("Invalid move generated for piece {}: ({}, {}) -> ({}, {})", piece, startX, startY, endX, endY);
+                        continue;
+                    }
+                    ChessPiece targetPiece = board[endY][endX].getPiece();
+                    board[endY][endX].setPiece(piece);
+                    board[startY][startX].setPiece(null);
+
+                    Map<ChessPiece, int[]> tempPositions = new java.util.HashMap<>(piecePositions);
+                    tempPositions.put(piece, new int[]{endX, endY});
+                    if (targetPiece != null) tempPositions.remove(targetPiece);
+
+                    boolean stillValid = !isKingInCheck(board, color, tempPositions);
+
+                    board[startY][startX].setPiece(piece);
+                    board[endY][endX].setPiece(targetPiece);
+
+                    if (stillValid) {
+                        return false; // Tìm thấy nước đi hợp lệ
+                    }
+                }
+            }
+        }
+        logger.info("No legal moves for {}, dead position confirmed", color);
+        return true;
+    }
+
+    public static boolean isFiftyMoveRule(int movesWithoutCaptureOrPawn) {
+        Logger logger = LoggerFactory.getLogger(BoardUtils.class);
+        boolean isFifty = movesWithoutCaptureOrPawn >= 50;
+        if (isFifty) {
+            logger.info("Fifty-move rule triggered: {} moves without capture or pawn move", movesWithoutCaptureOrPawn);
+        }
+        return isFifty;
     }
 }
