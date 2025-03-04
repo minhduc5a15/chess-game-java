@@ -12,37 +12,36 @@ public class ChessPanel {
     private static final Color DARK_BG = new Color(30, 30, 30); // #1E1E1E
 
     public ChessPanel() {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Chess Game");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setLayout(new BorderLayout());
-            frame.setBackground(DARK_BG);
+    SwingUtilities.invokeLater(() -> {
+        JFrame frame = new JFrame("Chess Game");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLayout(new BorderLayout());
+        frame.setBackground(DARK_BG);
 
-            GameEngine gameEngine = new GameEngine();
-            ChessBoard chessBoard = new ChessBoard(gameEngine);
+        GameEngine gameEngine = new GameEngine();
+        ChessBoard chessBoard = new ChessBoard(gameEngine);
 
-            JPanel player1Panel = createPlayerPanel("Naruto", PieceColor.BLACK, gameEngine, "images/avatar1.png");
-            JPanel player2Panel = createPlayerPanel("Sasuke", PieceColor.WHITE, gameEngine, "images/avatar2.png");
+        Player blackPlayer = new Player("Naruto", PieceColor.BLACK, gameEngine, "images/avatar1.png");
+        Player whitePlayer = new Player("Sasuke", PieceColor.WHITE, gameEngine, "images/avatar2.png");
+        JPanel whitePanel = blackPlayer.createPanel();
+        JPanel blackPanel = whitePlayer.createPanel();
 
-            JScrollPane chessScrollPane = new JScrollPane(chessBoard);
-            chessScrollPane.setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
-            chessScrollPane.setBorder(null);
-            chessScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            chessScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        whitePlayer.startTimer();
 
-            frame.add(player1Panel, BorderLayout.NORTH);
-            frame.add(chessScrollPane, BorderLayout.CENTER);
-            frame.add(player2Panel, BorderLayout.SOUTH);
 
-            frame.pack();
-            Insets insets = frame.getInsets();
-            int frameHeight = BOARD_HEIGHT + 2 * PLAYER_PANEL_HEIGHT + insets.top + insets.bottom;
-            frame.setSize(FRAME_WIDTH, frameHeight);
-            frame.setResizable(false);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
-        });
-    }
+        frame.add(whitePanel, BorderLayout.NORTH);
+        frame.add(chessBoard, BorderLayout.CENTER);
+        frame.add(blackPanel, BorderLayout.SOUTH);
+
+        frame.pack();
+        Insets insets = frame.getInsets();
+        int frameHeight = BOARD_HEIGHT + 2 * PLAYER_PANEL_HEIGHT + insets.top + insets.bottom;
+        frame.setSize(FRAME_WIDTH, frameHeight);
+        frame.setResizable(false);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+    });
+}
 
     private JPanel createPlayerPanel(String name, PieceColor color, GameEngine gameEngine, String avatarPath) {
         Player player = new Player(name, color, gameEngine, avatarPath);

@@ -6,51 +6,42 @@ import com.minhduc5a12.chess.pieces.*;
 import com.minhduc5a12.chess.utils.BoardUtils;
 import com.minhduc5a12.chess.utils.SoundPlayer;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import javax.swing.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GameEngine {
-    private static final Logger logger = LoggerFactory.getLogger(GameEngine.class);
     private final ChessTile[][] board;
     private PieceColor currentPlayerColor;
-    private Consumer<PieceColor> onTurnChange;
+    private final List<Consumer<PieceColor>> turnChangeListeners;
     private Move lastMove;
     private final Map<ChessPiece, int[]> piecePositions;
-    private final Map<PieceColor, Player> players;
-    private final List<Move> moveHistory;
-    private final List<String> boardStates;
-    private int movesWithoutCaptureOrPawn;
+    private static final Logger logger = LoggerFactory.getLogger(GameEngine.class);
 
     public GameEngine() {
         long start = System.currentTimeMillis();
         this.board = new ChessTile[8][8];
         this.currentPlayerColor = PieceColor.WHITE;
+        this.turnChangeListeners = new ArrayList<>();
         this.piecePositions = new HashMap<>();
-        this.players = new HashMap<>();
-        this.moveHistory = new ArrayList<>();
-        this.boardStates = new ArrayList<>();
-        this.movesWithoutCaptureOrPawn = 0;
         initializeBoard();
         initializePieces();
-        initializePlayers();
         logger.info("GameEngine initialization took {} ms", System.currentTimeMillis() - start);
     }
 
-    private void initializePlayers() {
-        players.put(PieceColor.BLACK, new Player("Naruto", PieceColor.BLACK, this, "images/avatar1.png"));
-        players.put(PieceColor.WHITE, new Player("Sasuke", PieceColor.WHITE, this, "images/avatar2.png"));
+    public void setOnTurnChange(Consumer<PieceColor> onTurnChange) {
+        this.turnChangeListeners.add(onTurnChange);
     }
 
-    public void setOnTurnChange(Consumer<PieceColor> onTurnChange) {
-        this.onTurnChange = onTurnChange;
+    public void addTurnChangeListener(Consumer<PieceColor> listener) {
+        turnChangeListeners.add(listener);
+        logger.info("Listener added, total listeners: {}", turnChangeListeners.size());
     }
 
     private void initializeBoard() {
@@ -87,11 +78,9 @@ public class GameEngine {
                 int row = (int) positions;
                 for (int col = 0; col < 8; col++) {
                     try {
-                        ChessPiece piece = pieceClass == Pawn.class ? new Pawn(color, imagePath, this) :
-                            (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class)
-                                .newInstance(color, imagePath, this);
+                        ChessPiece piece = pieceClass == Pawn.class ? new Pawn(color, imagePath, this) : (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
-                        updatePiecePosition(piece, col, row);
+                        piecePositions.put(piece, new int[]{col, row});
                     } catch (Exception e) {
                         logger.error("Error initializing piece at position [{}, {}]: {}", col, row, e.getMessage(), e);
                     }
@@ -101,10 +90,9 @@ public class GameEngine {
                     int row = pos[0];
                     int col = pos[1];
                     try {
-                        ChessPiece piece = (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class)
-                            .newInstance(color, imagePath, this);
+                        ChessPiece piece = (ChessPiece) pieceClass.getConstructor(PieceColor.class, String.class, GameEngine.class).newInstance(color, imagePath, this);
                         board[row][col].setPiece(piece);
-                        updatePiecePosition(piece, col, row);
+                        piecePositions.put(piece, new int[]{col, row});
                     } catch (Exception e) {
                         logger.error("Error initializing piece at position [{}, {}]: {}", col, row, e.getMessage(), e);
                     }
@@ -123,70 +111,51 @@ public class GameEngine {
 
     public void makeMove(int startX, int startY, int endX, int endY) {
         long start = System.currentTimeMillis();
-        if (!BoardUtils.isWithinBoard(startX, startY) || !BoardUtils.isWithinBoard(endX, endY)) {
-            logger.error("Invalid move coordinates: ({}, {}) -> ({}, {})", startX, startY, endX, endY);
-            SoundPlayer.playMoveIllegal();
-            return;
-        }
         ChessPiece piece = board[startY][startX].getPiece();
-        if (piece == null) {
-            logger.warn("No piece at starting position ({}, {})", startX, startY);
-            return;
-        }
+        if (piece == null) return;
 
         ChessPiece targetPiece = board[endY][endX].getPiece();
 
-        logger.info("Attempting move: {} from ({}, {}) to ({}, {})", piece, startX, startY, endX, endY);
+        long checkStart = System.currentTimeMillis();
         if (!isMoveValidUnderCheck(startX, startY, endX, endY)) {
             SoundPlayer.playMoveIllegal();
-            logger.info("Move invalid under check");
+            logger.info("Move invalid: ({}, {}) -> ({}, {}) by {}", startX, startY, endX, endY, currentPlayerColor);
             return;
+        }
+        logger.info("isMoveValidUnderCheck took {} ms", System.currentTimeMillis() - checkStart);
+
+        boolean isEnPassant = false;
+        if (piece instanceof Pawn && targetPiece == null && startX != endX) {
+            Move lastMove = getLastMove();
+            if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2 && lastMove.endX() == endX && lastMove.endY() == startY) {
+                board[lastMove.endY()][lastMove.endX()].setPiece(null);
+                isEnPassant = true;
+            }
         }
 
         board[endY][endX].setPiece(piece);
         board[startY][startX].setPiece(null);
-        updatePiecePosition(piece, endX, endY);
+        piece.setHasMoved(true);
 
-        PieceColor opponentColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
-
-        if (isCheckmate(opponentColor)) {
-            SoundPlayer.playMoveCheckSound();
-            String winner = currentPlayerColor == PieceColor.WHITE ? "Trắng" : "Đen";
-            logger.info("Checkmate detected! {} wins", winner);
-            JOptionPane.showMessageDialog(null, "Chiếu bí! Bên " + winner + " thắng!", "Kết thúc ván cờ", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
-
-        if (BoardUtils.isDeadPosition(board, opponentColor, piecePositions) ||
-            BoardUtils.isThreefoldRepetition(boardStates) ||
-            BoardUtils.isFiftyMoveRule(movesWithoutCaptureOrPawn)) {
-            logger.info("Stalemate detected! Game ends in a draw");
-            JOptionPane.showMessageDialog(null, "Hòa cờ! Không bên nào thắng.", "Kết thúc ván cờ", JOptionPane.INFORMATION_MESSAGE);
-            return;
-        }
+        if (targetPiece != null) piecePositions.remove(targetPiece);
+        piecePositions.put(piece, new int[]{endX, endY});
 
         if (piece instanceof Pawn) {
             if ((piece.getColor() == PieceColor.WHITE && endY == 0) || (piece.getColor() == PieceColor.BLACK && endY == 7)) {
                 ChessPiece promotedPiece = promotePawn(endX, endY, piece.getColor());
-                removePiece(piece);
-                updatePiecePosition(promotedPiece, endX, endY);
+                board[endY][endX].setPiece(promotedPiece);
+                piecePositions.remove(piece);
+                piecePositions.put(promotedPiece, new int[]{endX, endY});
             }
         }
 
-        if (piece instanceof Pawn && targetPiece == null && startX != endX) {
-            Move lastMoveCheck = getLastMove();
-            if (lastMoveCheck != null && board[lastMoveCheck.endY()][lastMoveCheck.endX()].getPiece() instanceof Pawn &&
-                Math.abs(lastMoveCheck.startY() - lastMoveCheck.endY()) == 2 && lastMoveCheck.endX() == endX && lastMoveCheck.endY() == startY) {
-                board[lastMoveCheck.endY()][lastMoveCheck.endX()].setPiece(null);
-                SoundPlayer.playCaptureSound();
-            } else {
-                SoundPlayer.playMoveSound();
-            }
-        } else if (targetPiece != null) {
+        long soundStart = System.currentTimeMillis();
+        if (isEnPassant || targetPiece != null) {
             SoundPlayer.playCaptureSound();
         } else {
             SoundPlayer.playMoveSound();
         }
+        logger.info("Sound playing took {} ms", System.currentTimeMillis() - soundStart);
 
         if (piece instanceof King && Math.abs(endX - startX) == 2) {
             performCastling(startY, endX);
@@ -194,31 +163,12 @@ public class GameEngine {
         }
 
         lastMove = new Move(startX, startY, endX, endY);
-        moveHistory.add(lastMove);
-        boardStates.add(getBoardState());
-        if (targetPiece != null || piece instanceof Pawn) {
-            movesWithoutCaptureOrPawn = 0;
-        } else {
-            movesWithoutCaptureOrPawn++;
-        }
 
-        currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        switchTurn();
 
-        if (onTurnChange != null) onTurnChange.accept(currentPlayerColor);
+        if (isKingInCheck(currentPlayerColor)) SoundPlayer.playMoveCheckSound();
 
-        if (isKingInCheck(currentPlayerColor)) {
-            logger.info("King of {} in check", currentPlayerColor);
-            SoundPlayer.playMoveCheckSound();
-        }
-
-        logger.info("makeMove took {} ms", System.currentTimeMillis() - start);
-    }
-
-    private void updatePlayerPanels() {
-        for (Player player : players.values()) {
-            JPanel panel = player.createPanel();
-            logger.debug("Updated player panel for player {}", player.getColor());
-        }
+        logger.info("Move completed: ({}, {}) -> ({}, {}) by {}, now turn: {}", startX, startY, endX, endY, piece.getColor(), currentPlayerColor);
     }
 
     private ChessPiece promotePawn(int x, int y, PieceColor color) {
@@ -227,6 +177,7 @@ public class GameEngine {
 
         String imagePathPrefix = color == PieceColor.WHITE ? "images/white_" : "images/black_";
         return switch (choice) {
+            case 0 -> new Queen(color, imagePathPrefix + "queen.png", this);
             case 1 -> new Rook(color, imagePathPrefix + "rook.png", this);
             case 2 -> new Knight(color, imagePathPrefix + "knight.png", this);
             case 3 -> new Bishop(color, imagePathPrefix + "bishop.png", this);
@@ -244,7 +195,15 @@ public class GameEngine {
         board[row][rookEndX].setPiece(rook);
         rookStartTile.setPiece(null);
         rook.setHasMoved(true);
-        updatePiecePosition(rook, rookEndX, row);
+        piecePositions.put(rook, new int[]{rookEndX, row});
+    }
+
+    public void switchTurn() {
+        currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        logger.info("Switching turn to: {}", currentPlayerColor);
+        for (Consumer<PieceColor> listener : turnChangeListeners) {
+            listener.accept(currentPlayerColor);
+        }
     }
 
     public boolean isValidMove(int startX, int startY, int endX, int endY) {
@@ -269,13 +228,6 @@ public class GameEngine {
 
     public void updatePiecePosition(ChessPiece piece, int newX, int newY) {
         piecePositions.put(piece, new int[]{newX, newY});
-        board[newY][newX].setPiece(piece);
-    }
-
-    public void removePiece(ChessPiece piece) {
-        int[] position = piecePositions.get(piece);
-        piecePositions.remove(piece);
-        board[position[1]][position[0]].setPiece(null);
     }
 
     public Map<ChessPiece, int[]> getPiecePositions() {
@@ -288,21 +240,5 @@ public class GameEngine {
 
     public Move getLastMove() {
         return lastMove;
-    }
-
-    private String getBoardState() {
-        StringBuilder state = new StringBuilder();
-        for (int y = 0; y < 8; y++) {
-            for (int x = 0; x < 8; x++) {
-                ChessPiece piece = board[y][x].getPiece();
-                state.append(piece == null ? "." : piece.getClass().getSimpleName().charAt(0) + piece.getColor().toString().charAt(0));
-            }
-        }
-        state.append(currentPlayerColor);
-        return state.toString();
-    }
-
-    public Player getPlayer(PieceColor color) {
-        return players.get(color);
     }
 }

@@ -2,9 +2,12 @@ package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.ImageLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+
 
 public class Player {
     private static final int BOARD_WIDTH = 800;
@@ -14,7 +17,8 @@ public class Player {
     private static final int TIME_PANEL_HEIGHT = 50;
     private static final Color DARK_BG = new Color(30, 30, 30);
     private static final Color TIME_BG = new Color(66, 66, 66);
-
+    // logger
+    private static final Logger logger = LoggerFactory.getLogger(Player.class);
     private final String name;
     private final PieceColor color;
     private int timeSeconds = 600;
@@ -35,9 +39,7 @@ public class Player {
     private void initializeLabels() {
         timeLabel = new JLabel(formatTime());
         int FONT_SIZE = 20;
-
         timeLabel.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
-        timeLabel.setForeground(color != PieceColor.WHITE ? Color.BLACK : Color.WHITE);
     }
 
     private String formatTime() {
@@ -46,10 +48,13 @@ public class Player {
 
     private void updateTimeLabel() {
         timeLabel.setText(formatTime());
+        timeLabel.repaint();
     }
 
     public void startTimer() {
-        if (timer != null) timer.stop();
+        if (timer != null && timer.isRunning()) {
+            timer.stop(); // Dừng timer cũ nếu đang chạy
+        }
         timer = new Timer(1000, e -> {
             if (color == gameEngine.getCurrentPlayerColor()) {
                 if (--timeSeconds <= 0) {
@@ -59,38 +64,52 @@ public class Player {
                 updateTimeLabel();
             }
         });
-        timer.start();
+        // Nếu là bên trắng và là lượt đầu tiên, chạy ngay
+        if (color == PieceColor.WHITE && gameEngine.getCurrentPlayerColor() == PieceColor.WHITE) {
+            timer.start();
+        }
     }
 
     public void pauseTimer() {
-        if (timer != null) timer.stop();
+        if (timer != null && timer.isRunning()) {
+            timer.stop();
+        }
     }
 
     public void resumeTimer() {
-        if (timer != null && !timer.isRunning()) timer.start();
+        if (timer != null && !timer.isRunning()) {
+            timer.start();
+        }
     }
 
     public JPanel createPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBackground(DARK_BG);
-        panel.setPreferredSize(new Dimension(BOARD_WIDTH, PLAYER_PANEL_HEIGHT));
+    JPanel panel = new JPanel(new BorderLayout());
+    panel.setBackground(DARK_BG);
+    panel.setPreferredSize(new Dimension(BOARD_WIDTH, PLAYER_PANEL_HEIGHT));
 
-        panel.add(createLeftSection(), BorderLayout.WEST);
-        panel.add(createRightSection(), BorderLayout.EAST);
+    panel.add(createLeftSection(), BorderLayout.WEST);
+    panel.add(createRightSection(), BorderLayout.EAST);
 
-        gameEngine.setOnTurnChange(newTurn -> {
-            if (color == newTurn) {
-                resumeTimer();
-                timeLabel.setForeground(Color.WHITE);
-            }
-            else {
-                pauseTimer();
-                timeLabel.setForeground(Color.BLACK);
-            }
-        });
+    // Đặt màu ban đầu dựa trên lượt hiện tại
+    timeLabel.setForeground(color == gameEngine.getCurrentPlayerColor() ? Color.WHITE : Color.BLACK);
 
-        return panel;
-    }
+    // Đăng ký listener với GameEngine
+    gameEngine.addTurnChangeListener(newTurn -> {
+        if (color == newTurn) {
+            resumeTimer();
+            timeLabel.setForeground(Color.WHITE);
+            logger.info("Turn switched to {} - Timer started", name);
+        } else {
+            pauseTimer();
+            timeLabel.setForeground(Color.BLACK);
+            logger.info("Turn switched away from {} - Timer paused", name);
+        }
+        timeLabel.repaint();
+        panel.repaint();
+    });
+
+    return panel;
+}
 
     private JPanel createLeftSection() {
         JPanel left = new JPanel();

@@ -4,12 +4,14 @@ import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.utils.ImageLoader;
 
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.io.IOException;
 
 public abstract class ChessPiece {
     private final PieceColor color;
     private final String imagePath;
-    private final Image image;
+    private final Image image; // Lưu ảnh đã resize
     private int pieceValue = 0;
     private boolean hasMoved = false;
     protected final GameEngine gameEngine;
@@ -17,7 +19,7 @@ public abstract class ChessPiece {
     public ChessPiece(PieceColor color, String imagePath, GameEngine gameEngine) {
         this.color = color;
         this.imagePath = imagePath;
-        this.image = ImageLoader.getImage(imagePath);
+        this.image = ImageLoader.getImage(imagePath); // Tải và resize ngay khi khởi tạo
         this.gameEngine = gameEngine;
     }
 
@@ -25,14 +27,7 @@ public abstract class ChessPiece {
         return image;
     }
 
-    public boolean isBlack() {
-        return color == PieceColor.BLACK;
-    }
-
-    public boolean isWhite() {
-        return color == PieceColor.WHITE;
-    }
-
+    // Các getter/setter và method khác giữ nguyên
     public PieceColor getColor() {
         return color;
     }
