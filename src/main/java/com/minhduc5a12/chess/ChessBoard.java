@@ -193,8 +193,7 @@ public class ChessBoard extends JPanel {
                     repaint();
                     logger.debug("Repainted board after left-click changes");
                 }
-            }
-            else if (e.getButton() == MouseEvent.BUTTON3) {
+            } else if (e.getButton() == MouseEvent.BUTTON3) {
                 if (clickedTile.getPiece() != null) {
                     if (!clickedTile.isRightClickHighlighted()) {
                         logger.info("Right-clicked on tile ({}, {}) with piece {}", row, col, clickedTile.getPiece());

@@ -37,7 +37,7 @@ public class Player {
         int FONT_SIZE = 20;
 
         timeLabel.setFont(new Font("Arial", Font.BOLD, FONT_SIZE));
-        timeLabel.setForeground(Color.WHITE);
+        timeLabel.setForeground(color != PieceColor.WHITE ? Color.BLACK : Color.WHITE);
     }
 
     private String formatTime() {
@@ -79,8 +79,14 @@ public class Player {
         panel.add(createRightSection(), BorderLayout.EAST);
 
         gameEngine.setOnTurnChange(newTurn -> {
-            if (color == newTurn) resumeTimer();
-            else pauseTimer();
+            if (color == newTurn) {
+                resumeTimer();
+                timeLabel.setForeground(Color.WHITE);
+            }
+            else {
+                pauseTimer();
+                timeLabel.setForeground(Color.BLACK);
+            }
         });
 
         return panel;

@@ -25,6 +25,14 @@ public abstract class ChessPiece {
         return image;
     }
 
+    public boolean isBlack() {
+        return color == PieceColor.BLACK;
+    }
+
+    public boolean isWhite() {
+        return color == PieceColor.WHITE;
+    }
+
     public PieceColor getColor() {
         return color;
     }
