@@ -26,6 +26,9 @@ public class ChessBoard extends JPanel {
     private static final Logger logger = LoggerFactory.getLogger(ChessBoard.class);
 
     public ChessBoard(GameEngine gameEngine) {
+        if (gameEngine == null) {
+            throw new IllegalArgumentException("gameEngine cannot be null");
+        }
         this.gameEngine = gameEngine;
         setPreferredSize(new Dimension(BOARD_SIZE * TILE_SIZE, BOARD_SIZE * TILE_SIZE));
         setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
@@ -35,7 +38,8 @@ public class ChessBoard extends JPanel {
         addMouseMotionListener(new ChessMouseMotionListener());
     }
 
-    private void initializeTiles() {
+    protected void initializeTiles() {
+        removeAll();
         ChessTile[][] board = gameEngine.getBoard();
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
@@ -43,6 +47,7 @@ public class ChessBoard extends JPanel {
                 add(tiles[row][col]);
             }
         }
+        revalidate();
     }
 
     private void loadChessboardImage() {
@@ -70,57 +75,58 @@ public class ChessBoard extends JPanel {
     }
 
     private class ChessMouseListener extends MouseAdapter {
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        int col = e.getX() / TILE_SIZE;
-        int row = e.getY() / TILE_SIZE;
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (gameEngine.isGameEnded()) return;
+            int col = e.getX() / TILE_SIZE;
+            int row = e.getY() / TILE_SIZE;
 
-        if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
-            ChessTile clickedTile = tiles[row][col];
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+                ChessTile clickedTile = tiles[row][col];
 
-            if (selectedTile == null) {
-                if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameEngine.getCurrentPlayerColor()) {
-                    selectedTile = clickedTile;
-                    selectedTile.setSelected(true);
-                    List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameEngine.getBoard());
-                    List<Move> filteredMoves = new ArrayList<>();
-                    for (Move move : validMoves) {
-                        if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), move.endX(), move.endY())) {
-                            filteredMoves.add(move);
+                if (selectedTile == null) {
+                    if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameEngine.getCurrentPlayerColor()) {
+                        selectedTile = clickedTile;
+                        selectedTile.setSelected(true);
+                        List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameEngine.getBoard());
+                        List<Move> filteredMoves = new ArrayList<>();
+                        for (Move move : validMoves) {
+                            if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), move.endX(), move.endY())) {
+                                filteredMoves.add(move);
+                            }
                         }
-                    }
-                    for (Move move : filteredMoves) {
-                        int endX = move.endX();
-                        int endY = move.endY();
-                        ChessTile targetTile = tiles[endY][endX];
-                        if (targetTile.getPiece() != null && targetTile.getPiece().getColor() != gameEngine.getCurrentPlayerColor()) {
-                            targetTile.setEnemyHighlighted(true);
-                        } else {
-                            targetTile.setHighlighted(true);
+                        for (Move move : filteredMoves) {
+                            int endX = move.endX();
+                            int endY = move.endY();
+                            ChessTile targetTile = tiles[endY][endX];
+                            if (targetTile.getPiece() != null && targetTile.getPiece().getColor() != gameEngine.getCurrentPlayerColor()) {
+                                targetTile.setEnemyHighlighted(true);
+                            } else {
+                                targetTile.setHighlighted(true);
+                            }
                         }
-                    }
-                    repaint();
-                }
-            } else {
-                ChessPiece selectedPiece = selectedTile.getPiece();
-                if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameEngine.getBoard())) {
-                    if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), col, row)) {
-                        gameEngine.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
                         repaint();
                     }
-                }
-                selectedTile.setSelected(false);
-                for (int y = 0; y < BOARD_SIZE; y++) {
-                    for (int x = 0; x < BOARD_SIZE; x++) {
-                        tiles[y][x].setHighlighted(false);
-                        tiles[y][x].setEnemyHighlighted(false);
+                } else {
+                    ChessPiece selectedPiece = selectedTile.getPiece();
+                    if (selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameEngine.getBoard())) {
+                        if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), col, row)) {
+                            gameEngine.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
+                            repaint();
+                        }
                     }
+                    selectedTile.setSelected(false);
+                    for (int y = 0; y < BOARD_SIZE; y++) {
+                        for (int x = 0; x < BOARD_SIZE; x++) {
+                            tiles[y][x].setHighlighted(false);
+                            tiles[y][x].setEnemyHighlighted(false);
+                        }
+                    }
+                    selectedTile = null;
                 }
-                selectedTile = null;
             }
         }
     }
-}
 
     private class ChessMouseMotionListener extends MouseMotionAdapter {
         @Override

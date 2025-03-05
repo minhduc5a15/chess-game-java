@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,50 +49,41 @@ public class BoardUtils {
 
     public static boolean isCheckmate(ChessTile[][] board, PieceColor color, Map<ChessPiece, int[]> piecePositions) {
         Logger logger = LoggerFactory.getLogger(BoardUtils.class);
-        logger.info("Checking if {} is in checkmate", color);
+        logger.info("Checking checkmate for {}", color);
         if (!isKingInCheck(board, color, piecePositions)) {
-            logger.info("King of {} not in check", color);
+            logger.info("King not in check");
             return false;
         }
-
-        List<Map.Entry<ChessPiece, int[]>> pieces = new ArrayList<>(piecePositions.entrySet());
-
-        for (Map.Entry<ChessPiece, int[]> entry : pieces) {
+        logger.info("King in check, testing moves");
+        for (Map.Entry<ChessPiece, int[]> entry : piecePositions.entrySet()) {
             ChessPiece piece = entry.getKey();
             if (piece.getColor() == color) {
-                int[] position = entry.getValue();
-                int startX = position[0];
-                int startY = position[1];
+                int startX = entry.getValue()[0];
+                int startY = entry.getValue()[1];
                 List<Move> validMoves = piece.generateValidMoves(startX, startY, board);
-
+                logger.info("Piece {} at ({}, {}) has {} moves", piece.getClass().getSimpleName(), startX, startY, validMoves.size());
                 for (Move move : validMoves) {
                     int endX = move.endX();
                     int endY = move.endY();
-
-                    // Thử di chuyển tạm thời trên bàn cờ
+                    logger.info("Trying move: ({}, {}) -> ({}, {})", startX, startY, endX, endY);
                     ChessPiece targetPiece = board[endY][endX].getPiece();
                     board[endY][endX].setPiece(piece);
                     board[startY][startX].setPiece(null);
-
-                    // Tạm lưu trạng thái để không sửa Map gốc
-                    Map<ChessPiece, int[]> tempPositions = new java.util.HashMap<>(piecePositions);
+                    Map<ChessPiece, int[]> tempPositions = new HashMap<>(piecePositions);
                     tempPositions.put(piece, new int[]{endX, endY});
                     if (targetPiece != null) tempPositions.remove(targetPiece);
-
                     boolean stillInCheck = isKingInCheck(board, color, tempPositions);
-
-                    // Hoàn tác
+                    logger.info("Still in check after move? {}", stillInCheck);
                     board[startY][startX].setPiece(piece);
                     board[endY][endX].setPiece(targetPiece);
-
                     if (!stillInCheck) {
-                        logger.info("Escape found for {} with move ({},{}) to ({},{})", color, startX, startY, endX, endY);
+                        logger.info("Escape move found");
                         return false;
                     }
                 }
             }
         }
-        logger.info("No escape for {}, checkmate confirmed", color);
+        logger.info("Checkmate confirmed");
         return true;
     }
 

@@ -4,14 +4,12 @@ import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.utils.ImageLoader;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.io.IOException;
 
 public abstract class ChessPiece {
     private final PieceColor color;
     private final String imagePath;
-    private final Image image; // Lưu ảnh đã resize
+    private final Image image;
     private int pieceValue = 0;
     private boolean hasMoved = false;
     protected final GameEngine gameEngine;
@@ -58,4 +56,5 @@ public abstract class ChessPiece {
         Move currentMove = new Move(startX, startY, endX, endY);
         return validMoves.contains(currentMove);
     }
+
 }

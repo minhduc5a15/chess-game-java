@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import javax.swing.*;
 import java.awt.*;
 
-
 public class Player {
     private static final int BOARD_WIDTH = 800;
     private static final int PLAYER_PANEL_HEIGHT = 100;
@@ -17,8 +16,8 @@ public class Player {
     private static final int TIME_PANEL_HEIGHT = 50;
     private static final Color DARK_BG = new Color(30, 30, 30);
     private static final Color TIME_BG = new Color(66, 66, 66);
-    // logger
     private static final Logger logger = LoggerFactory.getLogger(Player.class);
+
     private final String name;
     private final PieceColor color;
     private int timeSeconds = 600;
@@ -33,7 +32,7 @@ public class Player {
         this.gameEngine = gameEngine;
         this.avatarPath = avatarPath;
         initializeLabels();
-        startTimer();
+        gameEngine.addTurnChangeListener(this::onTurnChange);
     }
 
     private void initializeLabels() {
@@ -51,9 +50,9 @@ public class Player {
         timeLabel.repaint();
     }
 
-    public void startTimer() {
-        if (timer != null && timer.isRunning()) {
-            timer.stop(); // Dừng timer cũ nếu đang chạy
+    void startTimer() {
+        if (timer != null) {
+            timer.stop();
         }
         timer = new Timer(1000, e -> {
             if (color == gameEngine.getCurrentPlayerColor()) {
@@ -64,39 +63,27 @@ public class Player {
                 updateTimeLabel();
             }
         });
-        // Nếu là bên trắng và là lượt đầu tiên, chạy ngay
-        if (color == PieceColor.WHITE && gameEngine.getCurrentPlayerColor() == PieceColor.WHITE) {
-            timer.start();
-        }
+        timer.start();
+        logger.info("Timer started for {}", name);
     }
 
     public void pauseTimer() {
         if (timer != null && timer.isRunning()) {
             timer.stop();
+            logger.info("Timer paused for {}", name);
         }
     }
 
     public void resumeTimer() {
         if (timer != null && !timer.isRunning()) {
             timer.start();
+            logger.info("Timer resumed for {}", name);
         }
     }
 
-    public JPanel createPanel() {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBackground(DARK_BG);
-    panel.setPreferredSize(new Dimension(BOARD_WIDTH, PLAYER_PANEL_HEIGHT));
-
-    panel.add(createLeftSection(), BorderLayout.WEST);
-    panel.add(createRightSection(), BorderLayout.EAST);
-
-    // Đặt màu ban đầu dựa trên lượt hiện tại
-    timeLabel.setForeground(color == gameEngine.getCurrentPlayerColor() ? Color.WHITE : Color.BLACK);
-
-    // Đăng ký listener với GameEngine
-    gameEngine.addTurnChangeListener(newTurn -> {
+    private void onTurnChange(PieceColor newTurn) {
         if (color == newTurn) {
-            resumeTimer();
+            startTimer();
             timeLabel.setForeground(Color.WHITE);
             logger.info("Turn switched to {} - Timer started", name);
         } else {
@@ -105,11 +92,20 @@ public class Player {
             logger.info("Turn switched away from {} - Timer paused", name);
         }
         timeLabel.repaint();
-        panel.repaint();
-    });
+    }
 
-    return panel;
-}
+    public JPanel createPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(DARK_BG);
+        panel.setPreferredSize(new Dimension(BOARD_WIDTH, PLAYER_PANEL_HEIGHT));
+
+        panel.add(createLeftSection(), BorderLayout.WEST);
+        panel.add(createRightSection(), BorderLayout.EAST);
+
+        timeLabel.setForeground(color == gameEngine.getCurrentPlayerColor() ? Color.WHITE : Color.BLACK);
+
+        return panel;
+    }
 
     private JPanel createLeftSection() {
         JPanel left = new JPanel();
