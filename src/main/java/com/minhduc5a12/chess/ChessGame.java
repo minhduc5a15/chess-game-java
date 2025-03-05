@@ -11,7 +11,7 @@ public class ChessGame {
             System.setProperty("sun.java2d.uiScale", "1.0");
         }
 
-        ImageLoader.preloadImages();
+        ImageLoader.preloadImages();    
         SoundPlayer.preloadSounds();
         new ChessPanel();
     }

@@ -28,7 +28,6 @@ public class ChessPanel {
 
         whitePlayer.startTimer();
 
-
         frame.add(whitePanel, BorderLayout.NORTH);
         frame.add(chessBoard, BorderLayout.CENTER);
         frame.add(blackPanel, BorderLayout.SOUTH);

@@ -177,7 +177,6 @@ public class GameEngine {
 
         String imagePathPrefix = color == PieceColor.WHITE ? "images/white_" : "images/black_";
         return switch (choice) {
-            case 0 -> new Queen(color, imagePathPrefix + "queen.png", this);
             case 1 -> new Rook(color, imagePathPrefix + "rook.png", this);
             case 2 -> new Knight(color, imagePathPrefix + "knight.png", this);
             case 3 -> new Bishop(color, imagePathPrefix + "bishop.png", this);

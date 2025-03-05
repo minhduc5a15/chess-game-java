@@ -19,7 +19,7 @@ public abstract class ChessPiece {
     public ChessPiece(PieceColor color, String imagePath, GameEngine gameEngine) {
         this.color = color;
         this.imagePath = imagePath;
-        this.image = ImageLoader.getImage(imagePath); // Tải và resize ngay khi khởi tạo
+        this.image = ImageLoader.getImage(imagePath);
         this.gameEngine = gameEngine;
     }
 
@@ -27,7 +27,6 @@ public abstract class ChessPiece {
         return image;
     }
 
-    // Các getter/setter và method khác giữ nguyên
     public PieceColor getColor() {
         return color;
     }
