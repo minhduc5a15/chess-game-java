@@ -20,7 +20,9 @@ public class Stockfish {
 
     private void startEngine() {
         try {
-            String stockfishPath = Objects.requireNonNull(getClass().getClassLoader().getResource("stockfish")).getPath();
+            String os = System.getProperty("os.name").toLowerCase();
+            String stockfishFile = os.contains("win") ? "stockfish.exe" : "stockfish";
+            String stockfishPath = Objects.requireNonNull(getClass().getClassLoader().getResource(stockfishFile)).getPath();
             ProcessBuilder pb = new ProcessBuilder(stockfishPath);
             pb.redirectErrorStream(true);
             stockfishProcess = pb.start();
