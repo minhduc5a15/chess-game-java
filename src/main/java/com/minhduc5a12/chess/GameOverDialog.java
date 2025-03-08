@@ -4,19 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.geom.RoundRectangle2D;
-import java.util.function.Consumer;
 
 public class GameOverDialog extends JDialog {
-    private final GameEngine gameEngine;
-    private final Consumer<Void> restartCallback;
+    private final JFrame parentFrame;
 
-    public GameOverDialog(Frame parent, String message, GameEngine gameEngine, Consumer<Void> restartCallback) {
+    public GameOverDialog(Frame parent, String message) {
         super(parent, "Kết thúc ván cờ", true);
-        this.gameEngine = gameEngine;
-        this.restartCallback = restartCallback;
+        this.parentFrame = (JFrame) parent;
 
         setLayout(new BorderLayout(10, 10));
-        getContentPane().setBackground(new Color(30, 30, 30)); // Dark background
+        getContentPane().setBackground(new Color(30, 30, 30));
         setResizable(false);
         setUndecorated(true);
 
@@ -25,14 +22,11 @@ public class GameOverDialog extends JDialog {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 GradientPaint gradient = new GradientPaint(0, 0, new Color(40, 40, 40), getWidth(), getHeight(), new Color(20, 20, 20));
                 g2d.setPaint(gradient);
                 g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
-
                 g2d.setColor(new Color(80, 80, 80));
                 g2d.draw(new RoundRectangle2D.Double(0, 0, getWidth() - 1, getHeight() - 1, 20, 20));
-
                 g2d.dispose();
             }
         };
@@ -61,7 +55,7 @@ public class GameOverDialog extends JDialog {
 
         pack();
         setLocationRelativeTo(parent);
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20)); // Rounded corners
+        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
     }
 
     private JButton createStyledButton(String text) {
@@ -70,7 +64,6 @@ public class GameOverDialog extends JDialog {
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
                 if (getModel().isPressed()) {
                     g2d.setColor(new Color(50, 50, 50));
                 } else if (getModel().isRollover()) {
@@ -79,13 +72,11 @@ public class GameOverDialog extends JDialog {
                     g2d.setColor(new Color(60, 60, 60));
                 }
                 g2d.fill(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 10, 10));
-
                 g2d.setColor(Color.WHITE);
                 FontMetrics metrics = g2d.getFontMetrics();
                 int x = (getWidth() - metrics.stringWidth(getText())) / 2;
                 int y = ((getHeight() - metrics.getHeight()) / 2) + metrics.getAscent();
                 g2d.drawString(getText(), x, y);
-
                 g2d.dispose();
             }
 
@@ -100,13 +91,13 @@ public class GameOverDialog extends JDialog {
         button.setContentAreaFilled(false);
         button.setFocusPainted(false);
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
         return button;
     }
 
     private void onRestart(ActionEvent e) {
-        restartCallback.accept(null);
-        dispose();
+        dispose(); // Đóng dialog
+        parentFrame.dispose(); // Đóng frame cũ
+        new ChessPanel(); // Khởi tạo game mới
     }
 
     private void onExit(ActionEvent e) {

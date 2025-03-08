@@ -1,9 +1,11 @@
 package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.engine.Stockfish;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.pieces.*;
 import com.minhduc5a12.chess.utils.BoardUtils;
+import com.minhduc5a12.chess.utils.ChessNotationUtils;
 import com.minhduc5a12.chess.utils.SoundPlayer;
 
 import javax.swing.*;
@@ -24,6 +26,8 @@ public class GameEngine {
     private final Map<ChessPiece, int[]> piecePositions;
     private final List<String> boardStates;
     private final JFrame parentFrame;
+    private final ChessNotationUtils notationUtils;
+    private final Stockfish stockfish;
 
     private PieceColor currentPlayerColor;
     private Move lastMove;
@@ -31,8 +35,10 @@ public class GameEngine {
     private boolean gameEnded;
     private ChessBoard chessBoard;
 
+    private Player whitePlayer;
+    private Player blackPlayer;
+
     public GameEngine(JFrame parentFrame, ChessBoard chessBoard) {
-        long start = System.currentTimeMillis();
         this.board = new ChessTile[8][8];
         this.currentPlayerColor = PieceColor.WHITE;
         this.turnChangeListeners = new ArrayList<>();
@@ -42,15 +48,14 @@ public class GameEngine {
         this.chessBoard = chessBoard;
         this.movesWithoutCaptureOrPawn = 0;
         this.gameEnded = false;
+        this.notationUtils = new ChessNotationUtils(this);
+        this.stockfish = new Stockfish();
 
         initializeBoard();
         initializePieces();
         updateBoardState();
-
-        logger.info("GameEngine initialization took {} ms", System.currentTimeMillis() - start);
     }
 
-    // Getter và Setter
     public ChessTile[][] getBoard() {
         return board;
     }
@@ -71,15 +76,27 @@ public class GameEngine {
         return gameEnded;
     }
 
+    public int getMovesWithoutCaptureOrPawn() {
+        return movesWithoutCaptureOrPawn;
+    }
+
+    public List<String> getBoardStates() {
+        return boardStates;
+    }
+
     public void setChessBoard(ChessBoard chessBoard) {
         this.chessBoard = chessBoard;
+    }
+
+    public void setPlayers(Player whitePlayer, Player blackPlayer) {
+        this.whitePlayer = whitePlayer;
+        this.blackPlayer = blackPlayer;
     }
 
     public void addTurnChangeListener(Consumer<PieceColor> listener) {
         turnChangeListeners.add(listener);
     }
 
-    // Các phương thức khởi tạo
     private void initializeBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
@@ -88,21 +105,20 @@ public class GameEngine {
         }
     }
 
+    public void startInitialTimer() {
+        if (whitePlayer != null) {
+            whitePlayer.startTimer();
+        }
+        if (blackPlayer != null) {
+            blackPlayer.pauseTimer();
+        }
+        for (Consumer<PieceColor> listener : turnChangeListeners) {
+            listener.accept(currentPlayerColor);
+        }
+    }
+
     private void initializePieces() {
-        Object[][] pieces = {
-            {Pawn.class, PieceColor.WHITE, "images/white_pawn.png", 6},
-            {Pawn.class, PieceColor.BLACK, "images/black_pawn.png", 1},
-            {Rook.class, PieceColor.WHITE, "images/white_rook.png", new int[][]{{7, 0}, {7, 7}}},
-            {Rook.class, PieceColor.BLACK, "images/black_rook.png", new int[][]{{0, 0}, {0, 7}}},
-            {Knight.class, PieceColor.WHITE, "images/white_knight.png", new int[][]{{7, 1}, {7, 6}}},
-            {Knight.class, PieceColor.BLACK, "images/black_knight.png", new int[][]{{0, 1}, {0, 6}}},
-            {Bishop.class, PieceColor.WHITE, "images/white_bishop.png", new int[][]{{7, 2}, {7, 5}}},
-            {Bishop.class, PieceColor.BLACK, "images/black_bishop.png", new int[][]{{0, 2}, {0, 5}}},
-            {Queen.class, PieceColor.WHITE, "images/white_queen.png", new int[][]{{7, 3}}},
-            {Queen.class, PieceColor.BLACK, "images/black_queen.png", new int[][]{{0, 3}}},
-            {King.class, PieceColor.WHITE, "images/white_king.png", new int[][]{{7, 4}}},
-            {King.class, PieceColor.BLACK, "images/black_king.png", new int[][]{{0, 4}}}
-        };
+        Object[][] pieces = {{Pawn.class, PieceColor.WHITE, "images/white_pawn.png", 6}, {Pawn.class, PieceColor.BLACK, "images/black_pawn.png", 1}, {Rook.class, PieceColor.WHITE, "images/white_rook.png", new int[][]{{7, 0}, {7, 7}}}, {Rook.class, PieceColor.BLACK, "images/black_rook.png", new int[][]{{0, 0}, {0, 7}}}, {Knight.class, PieceColor.WHITE, "images/white_knight.png", new int[][]{{7, 1}, {7, 6}}}, {Knight.class, PieceColor.BLACK, "images/black_knight.png", new int[][]{{0, 1}, {0, 6}}}, {Bishop.class, PieceColor.WHITE, "images/white_bishop.png", new int[][]{{7, 2}, {7, 5}}}, {Bishop.class, PieceColor.BLACK, "images/black_bishop.png", new int[][]{{0, 2}, {0, 5}}}, {Queen.class, PieceColor.WHITE, "images/white_queen.png", new int[][]{{7, 3}}}, {Queen.class, PieceColor.BLACK, "images/black_queen.png", new int[][]{{0, 3}}}, {King.class, PieceColor.WHITE, "images/white_king.png", new int[][]{{7, 4}}}, {King.class, PieceColor.BLACK, "images/black_king.png", new int[][]{{0, 4}}}};
 
         for (Object[] pieceInfo : pieces) {
             Class<?> pieceClass = (Class<?>) pieceInfo[0];
@@ -137,14 +153,15 @@ public class GameEngine {
         }
     }
 
-    // Các phương thức liên quan đến di chuyển và logic game
     public void makeMove(int startX, int startY, int endX, int endY) {
-        if (gameEnded) return;
+        if (gameEnded) {
+            return;
+        }
 
         ChessPiece piece = board[startY][startX].getPiece();
-        if (piece == null) return;
-
-        ChessPiece targetPiece = board[endY][endX].getPiece();
+        if (piece == null || piece.getColor() != currentPlayerColor) {
+            return;
+        }
 
         if (!isMoveValidUnderCheck(startX, startY, endX, endY)) {
             SoundPlayer.playMoveIllegal();
@@ -152,8 +169,9 @@ public class GameEngine {
         }
 
         boolean isEnPassant = false;
-        boolean isCapture = targetPiece != null;
-        if (piece instanceof Pawn && targetPiece == null && startX != endX) {
+        boolean isCapture = board[endY][endX].getPiece() != null;
+
+        if (piece instanceof Pawn && board[endY][endX].getPiece() == null && startX != endX) {
             Move lastMove = getLastMove();
             if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2 && lastMove.endX() == endX && lastMove.endY() == startY) {
                 board[lastMove.endY()][lastMove.endX()].setPiece(null);
@@ -162,6 +180,7 @@ public class GameEngine {
             }
         }
 
+        ChessPiece targetPiece = board[endY][endX].getPiece();
         board[endY][endX].setPiece(piece);
         board[startY][startX].setPiece(null);
         piece.setHasMoved(true);
@@ -199,8 +218,54 @@ public class GameEngine {
 
         updateBoardState();
         checkGameState();
-        switchTurn();
+
+        if (!gameEnded) {
+            switchTurn();
+        }
+
+        // Cập nhật giao diện ngay lập tức
         if (chessBoard != null) chessBoard.repaint();
+
+        // Lấy FEN sau khi đổi lượt
+        String fen = notationUtils.getFen();
+        logger.info("Current FEN after move: {}", fen);
+
+        // Chạy Stockfish trong luồng riêng nếu là nước đi của Trắng
+        if (!gameEnded && piece.getColor() == PieceColor.WHITE) {
+            resetStockfishSuggestions();
+            new Thread(() -> {
+                stockfish.sendCommand("position fen " + fen);
+                stockfish.sendCommand("go depth 25");
+                List<String> output = stockfish.getOutput();
+                String bestMove = null;
+                for (String line : output) {
+                    if (line.startsWith("bestmove")) {
+                        bestMove = line.split(" ")[1];
+                        logger.info("Stockfish best move for Black: {}", bestMove);
+                        break;
+                    }
+                }
+                if (bestMove != null && bestMove.length() >= 4) {
+                    int startXStockfish = bestMove.charAt(0) - 'a'; // Ô gốc X
+                    int startYStockfish = 7 - (bestMove.charAt(1) - '1'); // Ô gốc Y
+                    int endXStockfish = bestMove.charAt(2) - 'a'; // Ô đích X
+                    int endYStockfish = 7 - (bestMove.charAt(3) - '1'); // Ô đích Y
+                    SwingUtilities.invokeLater(() -> {
+                        board[startYStockfish][startXStockfish].setStockfishSuggested(true); // Tô ô gốc
+                        board[endYStockfish][endXStockfish].setStockfishSuggested(true); // Tô ô đích
+                        if (chessBoard != null) chessBoard.repaint();
+                    });
+                }
+            }).start();
+        }
+    }
+
+    private void resetStockfishSuggestions() {
+        for (int y = 0; y < 8; y++) {
+            for (int x = 0; x < 8; x++) {
+                board[y][x].setStockfishSuggested(false);
+            }
+        }
     }
 
     private ChessPiece promotePawn(int x, int y, PieceColor color) {
@@ -231,6 +296,10 @@ public class GameEngine {
 
     public void switchTurn() {
         currentPlayerColor = (currentPlayerColor == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
+        if (currentPlayerColor == PieceColor.WHITE) {
+            resetStockfishSuggestions();
+            if (chessBoard != null) chessBoard.repaint();
+        }
         for (Consumer<PieceColor> listener : turnChangeListeners) {
             listener.accept(currentPlayerColor);
         }
@@ -295,13 +364,12 @@ public class GameEngine {
 
     private void showGameOverDialog(String message) {
         if (chessBoard != null) chessBoard.repaint();
-        GameOverDialog dialog = new GameOverDialog(parentFrame, message, this, v -> resetGame());
+        GameOverDialog dialog = new GameOverDialog(parentFrame, message);
         dialog.setVisible(true);
     }
 
     private void resetGame() {
         gameEnded = false;
-        currentPlayerColor = PieceColor.WHITE;
         boardStates.clear();
         movesWithoutCaptureOrPawn = 0;
         lastMove = null;
@@ -310,15 +378,24 @@ public class GameEngine {
         initializePieces();
         updateBoardState();
 
+        currentPlayerColor = PieceColor.WHITE;
+
         if (chessBoard != null) {
             chessBoard.initializeTiles();
             chessBoard.repaint();
         }
 
+        if (whitePlayer != null) {
+            whitePlayer.resetTimer();
+            whitePlayer.startTimer();
+        }
+        if (blackPlayer != null) {
+            blackPlayer.resetTimer();
+            blackPlayer.pauseTimer();
+        }
+
         for (Consumer<PieceColor> listener : turnChangeListeners) {
             listener.accept(currentPlayerColor);
         }
-
-        switchTurn();
     }
 }

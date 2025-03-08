@@ -17,10 +17,10 @@ public class Player {
     private static final Color DARK_BG = new Color(30, 30, 30);
     private static final Color TIME_BG = new Color(66, 66, 66);
     private static final Logger logger = LoggerFactory.getLogger(Player.class);
-
+    private static final int INITIAL_TIME_SECONDS = 600;
     private final String name;
     private final PieceColor color;
-    private int timeSeconds = 600;
+    private int timeSeconds = INITIAL_TIME_SECONDS;
     private JLabel timeLabel;
     private final GameEngine gameEngine;
     private Timer timer;
@@ -74,14 +74,15 @@ public class Player {
         }
     }
 
-    public void resumeTimer() {
-        if (timer != null && !timer.isRunning()) {
-            timer.start();
-            logger.info("Timer resumed for {}", name);
-        }
+    public void resetTimer() {
+        pauseTimer();
+        timeSeconds = INITIAL_TIME_SECONDS;
+        updateTimeLabel();
+        logger.info("Timer reset for {}", name);
     }
 
     private void onTurnChange(PieceColor newTurn) {
+        logger.info("onTurnChange called for {} with newTurn: {}", name, newTurn);
         if (color == newTurn) {
             startTimer();
             timeLabel.setForeground(Color.WHITE);

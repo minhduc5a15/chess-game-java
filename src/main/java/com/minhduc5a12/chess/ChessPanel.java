@@ -1,6 +1,8 @@
 package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.utils.ImageLoader;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -8,7 +10,10 @@ public class ChessPanel {
     private static final int BOARD_HEIGHT = 800;
     private static final int PLAYER_PANEL_HEIGHT = 100;
     private static final int FRAME_WIDTH = 800;
-    private static final Color DARK_BG = new Color(30, 30, 30); // #1E1E1E
+    private static final Color DARK_BG = new Color(30, 30, 30);
+
+    private Player blackPlayer;
+    private Player whitePlayer;
 
     public ChessPanel() {
         SwingUtilities.invokeLater(() -> {
@@ -22,16 +27,20 @@ public class ChessPanel {
 
             gameEngine.setChessBoard(chessBoard);
 
-            Player blackPlayer = new Player("Naruto", PieceColor.BLACK, gameEngine, "images/avatar1.png");
-            Player whitePlayer = new Player("Sasuke", PieceColor.WHITE, gameEngine, "images/avatar2.png");
-            JPanel whitePanel = blackPlayer.createPanel();
-            JPanel blackPanel = whitePlayer.createPanel();
+            blackPlayer = new Player("Naruto", PieceColor.BLACK, gameEngine, "images/avatar1.png");
+            whitePlayer = new Player("Sasuke", PieceColor.WHITE, gameEngine, "images/avatar2.png");
+            JPanel blackPlayerPanel = blackPlayer.createPanel();
+            JPanel whitePlayerPanel = whitePlayer.createPanel();
 
-            whitePlayer.startTimer();
+            // Không gọi whitePlayer.startTimer() ở đây nữa
+            gameEngine.setPlayers(whitePlayer, blackPlayer);
 
-            frame.add(whitePanel, BorderLayout.NORTH);
+            // Bắt đầu timer trắng từ GameEngine
+            gameEngine.startInitialTimer();
+
+            frame.add(blackPlayerPanel, BorderLayout.NORTH);
             frame.add(chessBoard, BorderLayout.CENTER);
-            frame.add(blackPanel, BorderLayout.SOUTH);
+            frame.add(whitePlayerPanel, BorderLayout.SOUTH);
 
             frame.pack();
             Insets insets = frame.getInsets();

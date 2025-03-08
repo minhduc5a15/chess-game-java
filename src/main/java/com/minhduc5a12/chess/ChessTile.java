@@ -1,5 +1,7 @@
 package com.minhduc5a12.chess;
 
+import com.minhduc5a12.chess.pieces.ChessPiece;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -14,12 +16,18 @@ public class ChessTile extends JPanel {
     private boolean isEnemyHighlighted = false;
     private boolean isHighlighted = false;
     private boolean isSelected = false;
+    private boolean isStockfishSuggested = false;
 
     public ChessTile(int row, int col) {
         this.row = row;
         this.col = col;
         setPreferredSize(new Dimension(TILE_SIZE, TILE_SIZE));
         setOpaque(false);
+    }
+
+    public void setStockfishSuggested(boolean suggested) {
+        this.isStockfishSuggested = suggested;
+        repaint();
     }
 
     public ChessPiece getPiece() {
@@ -61,6 +69,11 @@ public class ChessTile extends JPanel {
 
         if (isSelected) {
             g2d.setColor(new Color(56, 72, 79, 160));
+            g2d.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
+        }
+
+        if (isStockfishSuggested) { // Tô toàn bộ ô màu xanh nhạt
+            g2d.setColor(new Color(173, 216, 230, 100)); // Light Blue với độ trong suốt
             g2d.fillRect(0, 0, TILE_SIZE, TILE_SIZE);
         }
 

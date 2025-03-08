@@ -1,6 +1,5 @@
 package com.minhduc5a12.chess.pieces;
 
-import com.minhduc5a12.chess.ChessPiece;
 import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.GameEngine;
 import com.minhduc5a12.chess.model.Move;

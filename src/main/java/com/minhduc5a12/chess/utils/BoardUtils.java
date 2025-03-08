@@ -1,6 +1,6 @@
 package com.minhduc5a12.chess.utils;
 
-import com.minhduc5a12.chess.ChessPiece;
+import com.minhduc5a12.chess.pieces.ChessPiece;
 import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
