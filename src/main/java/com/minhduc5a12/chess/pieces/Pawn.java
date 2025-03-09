@@ -1,7 +1,7 @@
 package com.minhduc5a12.chess.pieces;
 
 import com.minhduc5a12.chess.ChessTile;
-import com.minhduc5a12.chess.GameEngine;
+import com.minhduc5a12.chess.GameController;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.constants.PieceColor;
 
@@ -9,11 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pawn extends ChessPiece {
-    private final GameEngine gameEngine; // Để truy cập lastMove
+    private final GameController gameController; // Để truy cập lastMove
 
-    public Pawn(PieceColor color, String imagePath, GameEngine gameEngine) {
-        super(color, imagePath, gameEngine);
-        this.gameEngine = gameEngine;
+    public Pawn(PieceColor color, String imagePath, GameController gameController) {
+        super(color, imagePath, gameController);
+        this.gameController = gameController;
         this.setPieceValue(1);
     }
 
@@ -44,7 +44,7 @@ public class Pawn extends ChessPiece {
             }
         }
 
-        Move lastMove = gameEngine.getLastMove();
+        Move lastMove = gameController.getLastMove();
         if (lastMove != null && board[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn) {
             int lastStartY = lastMove.startY();
             int lastEndY = lastMove.endY();

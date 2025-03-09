@@ -1,7 +1,6 @@
 package com.minhduc5a12.chess;
 
 import com.minhduc5a12.chess.constants.PieceColor;
-import com.minhduc5a12.chess.utils.ImageLoader;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,21 +21,17 @@ public class ChessPanel {
             frame.setLayout(new BorderLayout());
             frame.setBackground(DARK_BG);
 
-            GameEngine gameEngine = new GameEngine(frame, null);
-            ChessBoard chessBoard = new ChessBoard(gameEngine);
+            ChessBoard chessBoard = new ChessBoard(null);
+            GameController gameController = new GameController(frame, chessBoard);
+            chessBoard.setGameController(gameController);
 
-            gameEngine.setChessBoard(chessBoard);
-
-            blackPlayer = new Player("Naruto", PieceColor.BLACK, gameEngine, "images/avatar1.png");
-            whitePlayer = new Player("Sasuke", PieceColor.WHITE, gameEngine, "images/avatar2.png");
+            blackPlayer = new Player("Naruto", PieceColor.BLACK, gameController, "images/avatar1.png");
+            whitePlayer = new Player("Sasuke", PieceColor.WHITE, gameController, "images/avatar2.png");
             JPanel blackPlayerPanel = blackPlayer.createPanel();
             JPanel whitePlayerPanel = whitePlayer.createPanel();
 
-            // Không gọi whitePlayer.startTimer() ở đây nữa
-            gameEngine.setPlayers(whitePlayer, blackPlayer);
-
-            // Bắt đầu timer trắng từ GameEngine
-            gameEngine.startInitialTimer();
+            gameController.setPlayers(whitePlayer, blackPlayer);
+            gameController.startInitialTimer();
 
             frame.add(blackPlayerPanel, BorderLayout.NORTH);
             frame.add(chessBoard, BorderLayout.CENTER);

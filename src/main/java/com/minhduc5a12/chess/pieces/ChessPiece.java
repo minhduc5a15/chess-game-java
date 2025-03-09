@@ -1,7 +1,7 @@
 package com.minhduc5a12.chess.pieces;
 
 import com.minhduc5a12.chess.ChessTile;
-import com.minhduc5a12.chess.GameEngine;
+import com.minhduc5a12.chess.GameController;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.utils.ImageLoader;
@@ -14,13 +14,13 @@ public abstract class ChessPiece {
     private final Image image;
     private int pieceValue = 0;
     private boolean hasMoved = false;
-    protected final GameEngine gameEngine;
+    protected final GameController gameController;
 
-    public ChessPiece(PieceColor color, String imagePath, GameEngine gameEngine) {
+    public ChessPiece(PieceColor color, String imagePath, GameController gameController) {
         this.color = color;
         this.imagePath = imagePath;
         this.image = ImageLoader.getImage(imagePath);
-        this.gameEngine = gameEngine;
+        this.gameController = gameController;
     }
 
     public Image getImage() {

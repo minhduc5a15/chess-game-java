@@ -1,27 +1,27 @@
 package com.minhduc5a12.chess.utils;
 
-import com.minhduc5a12.chess.pieces.*;
 import com.minhduc5a12.chess.ChessTile;
-import com.minhduc5a12.chess.GameEngine;
+import com.minhduc5a12.chess.GameController;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
+import com.minhduc5a12.chess.pieces.*;
 
 public class ChessNotationUtils {
-    private final GameEngine gameEngine;
+    private final GameController gameController;
 
-    public ChessNotationUtils(GameEngine gameEngine) {
-        this.gameEngine = gameEngine;
+    public ChessNotationUtils(GameController gameController) {
+        this.gameController = gameController;
     }
 
     public String getFen() {
         StringBuilder fen = new StringBuilder();
-        ChessTile[][] board = gameEngine.getBoard();
+        ChessTile[][] board = gameController.getBoard();
 
-        // Phần 1: Vị trí quân cờ
-        for (int row = 0; row < 8; row++) {
+        // 1. Vị trí quân cờ
+        for (int y = 0; y < 8; y++) {
             int emptyCount = 0;
-            for (int col = 0; col < 8; col++) {
-                ChessPiece piece = board[row][col].getPiece();
+            for (int x = 0; x < 8; x++) {
+                ChessPiece piece = board[y][x].getPiece();
                 if (piece == null) {
                     emptyCount++;
                 } else {
@@ -29,110 +29,101 @@ public class ChessNotationUtils {
                         fen.append(emptyCount);
                         emptyCount = 0;
                     }
-                    fen.append(getPieceFenChar(piece));
+                    fen.append(getPieceSymbol(piece));
                 }
             }
             if (emptyCount > 0) {
                 fen.append(emptyCount);
             }
-            if (row < 7) {
+            if (y < 7) {
                 fen.append("/");
             }
         }
 
-        // Phần 2: Lượt đi hiện tại
-        fen.append(" ").append(gameEngine.getCurrentPlayerColor() == PieceColor.WHITE ? "w" : "b");
+        // 2. Lượt chơi hiện tại
+        fen.append(" ");
+        fen.append(gameController.getCurrentPlayerColor() == PieceColor.WHITE ? "w" : "b");
 
-        // Phần 3: Quyền nhập thành
-        fen.append(" ").append(getCastlingAvailability());
+        // 3. Quyền nhập thành
+        fen.append(" ");
+        fen.append(getCastlingAvailability());
 
-        // Phần 4: Ô đích en passant
-        fen.append(" ").append(getEnPassantTarget());
+        // 4. En passant target square
+        fen.append(" ");
+        fen.append(getEnPassantTarget());
 
-        // Phần 5: Số nước không ăn quân hoặc di chuyển tốt
-        fen.append(" ").append(gameEngine.getMovesWithoutCaptureOrPawn());
+        // 5. Halfmove clock (số nước kể từ lần cuối ăn quân hoặc di chuyển tốt)
+        fen.append(" ");
+        fen.append(gameController.getMovesWithoutCaptureOrPawn());
 
-        // Phần 6: Số lượt đầy đủ
-        int fullMoveCount = (gameEngine.getBoardStates().size() + 1) / 2;
-        fen.append(" ").append(fullMoveCount);
+        // 6. Fullmove number (số lượt đầy đủ, tăng sau mỗi lượt của đen)
+        fen.append(" ");
+        fen.append((gameController.getBoardStates().size() + 1) / 2);
 
         return fen.toString();
     }
 
-    private char getPieceFenChar(ChessPiece piece) {
-        char fenChar = switch (piece) {
-            case Pawn pawn -> 'p';
-            case Rook rook -> 'r';
-            case Knight knight -> 'n';
-            case Bishop bishop -> 'b';
-            case Queen queen -> 'q';
-            case King king -> 'k';
-            case null, default -> {
-                assert piece != null;
-                throw new IllegalStateException("Unknown piece type: " + piece.getClass().getSimpleName());
-            }
-        };
+    private String getPieceSymbol(ChessPiece piece) {
+        char symbol;
+        if (piece instanceof Pawn) symbol = 'p';
+        else if (piece instanceof Rook) symbol = 'r';
+        else if (piece instanceof Knight) symbol = 'n';
+        else if (piece instanceof Bishop) symbol = 'b';
+        else if (piece instanceof Queen) symbol = 'q';
+        else if (piece instanceof King) symbol = 'k';
+        else throw new IllegalArgumentException("Unknown piece type");
 
-        return piece.getColor() == PieceColor.WHITE ? Character.toUpperCase(fenChar) : fenChar;
+        return piece.getColor() == PieceColor.WHITE ? String.valueOf(Character.toUpperCase(symbol)) : String.valueOf(symbol);
     }
 
     private String getCastlingAvailability() {
+        ChessTile[][] board = gameController.getBoard();
         StringBuilder castling = new StringBuilder();
 
-        ChessPiece whiteKing = null;
-        ChessPiece whiteRookKingside = null;
-        ChessPiece whiteRookQueenside = null;
-        ChessPiece blackKing = null;
-        ChessPiece blackRookKingside = null;
-        ChessPiece blackRookQueenside = null;
-
-        for (ChessPiece piece : gameEngine.getPiecePositions().keySet()) {
-            int[] pos = gameEngine.getPiecePosition(piece);
-            if (piece instanceof King) {
-                if (piece.getColor() == PieceColor.WHITE) whiteKing = piece;
-                else blackKing = piece;
-            } else if (piece instanceof Rook) {
-                if (piece.getColor() == PieceColor.WHITE) {
-                    if (pos[0] == 7 && pos[1] == 7) whiteRookKingside = piece;   // h1
-                    else if (pos[0] == 0 && pos[1] == 7) whiteRookQueenside = piece; // a1
-                } else {
-                    if (pos[0] == 7 && pos[1] == 0) blackRookKingside = piece;   // h8
-                    else if (pos[0] == 0 && pos[1] == 0) blackRookQueenside = piece; // a8
-                }
-            }
-        }
-
-        if (whiteKing != null && !whiteKing.hasMoved()) {
-            if (whiteRookKingside != null && !whiteRookKingside.hasMoved()) {
+        // Kiểm tra quyền nhập thành trắng
+        ChessPiece whiteKing = board[7][4].getPiece();
+        if (whiteKing instanceof King && !whiteKing.hasMoved()) {
+            ChessPiece rookH = board[7][7].getPiece();
+            if (rookH instanceof Rook && !rookH.hasMoved()) {
                 castling.append("K");
             }
-            if (whiteRookQueenside != null && !whiteRookQueenside.hasMoved()) {
+            ChessPiece rookA = board[7][0].getPiece();
+            if (rookA instanceof Rook && !rookA.hasMoved()) {
                 castling.append("Q");
             }
         }
 
-        if (blackKing != null && !blackKing.hasMoved()) {
-            if (blackRookKingside != null && !blackRookKingside.hasMoved()) {
+        // Kiểm tra quyền nhập thành đen
+        ChessPiece blackKing = board[0][4].getPiece();
+        if (blackKing instanceof King && !blackKing.hasMoved()) {
+            ChessPiece rookH = board[0][7].getPiece();
+            if (rookH instanceof Rook && !rookH.hasMoved()) {
                 castling.append("k");
             }
-            if (blackRookQueenside != null && !blackRookQueenside.hasMoved()) {
+            ChessPiece rookA = board[0][0].getPiece();
+            if (rookA instanceof Rook && !rookA.hasMoved()) {
                 castling.append("q");
             }
         }
 
-        return !castling.isEmpty() ? castling.toString() : "-";
+        return castling.length() > 0 ? castling.toString() : "-";
     }
 
     private String getEnPassantTarget() {
-        Move lastMove = gameEngine.getLastMove();
-        if (lastMove != null && gameEngine.getBoard()[lastMove.endY()][lastMove.endX()].getPiece() instanceof Pawn) {
-            if (Math.abs(lastMove.startY() - lastMove.endY()) == 2) {
-                int midY = (lastMove.startY() + lastMove.endY()) / 2;
+        Move lastMove = gameController.getLastMove();
+        if (lastMove != null) {
+            ChessPiece piece = gameController.getBoard()[lastMove.endY()][lastMove.endX()].getPiece();
+            if (piece instanceof Pawn && Math.abs(lastMove.startY() - lastMove.endY()) == 2) {
+                int enPassantY = (lastMove.startY() + lastMove.endY()) / 2;
                 char file = (char) ('a' + lastMove.endX());
-                char rank = (char) ('8' - midY);
-                return "" + file + rank;
+                return "" + file + (8 - enPassantY);
             }
         }
         return "-";
+    }
+
+    // Getter cho movesWithoutCaptureOrPawn (nếu cần)
+    public int getMovesWithoutCaptureOrPawn() {
+        return gameController.getMovesWithoutCaptureOrPawn();
     }
 }

@@ -1,7 +1,7 @@
 package com.minhduc5a12.chess.pieces;
 
 import com.minhduc5a12.chess.ChessTile;
-import com.minhduc5a12.chess.GameEngine;
+import com.minhduc5a12.chess.GameController;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.BoardUtils;
@@ -11,8 +11,8 @@ import java.util.List;
 
 public class Bishop extends ChessPiece {
 
-    public Bishop(PieceColor color, String imagePath, GameEngine gameEngine) {
-        super(color, imagePath, gameEngine);
+    public Bishop(PieceColor color, String imagePath, GameController gameController) {
+        super(color, imagePath, gameController);
         this.setPieceValue(3);
     }
 

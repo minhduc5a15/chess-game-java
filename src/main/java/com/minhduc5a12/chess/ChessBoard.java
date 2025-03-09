@@ -22,15 +22,12 @@ public class ChessBoard extends JPanel {
 
     private final ChessTile[][] tiles = new ChessTile[BOARD_SIZE][BOARD_SIZE];
     private ChessTile selectedTile = null;
-    private final GameEngine gameEngine;
+    private GameController gameController;
     private BufferedImage chessboardImage;
     private static final Logger logger = LoggerFactory.getLogger(ChessBoard.class);
 
-    public ChessBoard(GameEngine gameEngine) {
-        if (gameEngine == null) {
-            throw new IllegalArgumentException("gameEngine cannot be null");
-        }
-        this.gameEngine = gameEngine;
+    public ChessBoard(GameController gameController) {
+        this.gameController = gameController; // Không throw exception nếu null
         setPreferredSize(new Dimension(BOARD_SIZE * TILE_SIZE, BOARD_SIZE * TILE_SIZE));
         setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
         initializeTiles();
@@ -39,13 +36,20 @@ public class ChessBoard extends JPanel {
         addMouseMotionListener(new ChessMouseMotionListener());
     }
 
+    public void setGameController(GameController gameController) {
+        this.gameController = gameController;
+        initializeTiles();
+    }
+
     protected void initializeTiles() {
         removeAll();
-        ChessTile[][] board = gameEngine.getBoard();
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                tiles[row][col] = board[row][col];
-                add(tiles[row][col]);
+        if (gameController != null) {
+            ChessTile[][] board = gameController.getBoard();
+            for (int row = 0; row < BOARD_SIZE; row++) {
+                for (int col = 0; col < BOARD_SIZE; col++) {
+                    tiles[row][col] = board[row][col];
+                    add(tiles[row][col]);
+                }
             }
         }
         selectedTile = null;
@@ -77,7 +81,8 @@ public class ChessBoard extends JPanel {
     }
 
     private void handleTileSelection(ChessTile clickedTile) {
-        if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameEngine.getCurrentPlayerColor()) {
+        if (gameController == null) return; // Kiểm tra null
+        if (clickedTile.getPiece() != null && clickedTile.getPiece().getColor() == gameController.getCurrentPlayerColor()) {
             selectedTile = clickedTile;
             selectedTile.setSelected(true);
             highlightValidMoves(selectedTile);
@@ -86,10 +91,11 @@ public class ChessBoard extends JPanel {
     }
 
     private void highlightValidMoves(ChessTile selectedTile) {
-        List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameEngine.getBoard());
+        if (gameController == null) return; // Kiểm tra null
+        List<Move> validMoves = selectedTile.getPiece().generateValidMoves(selectedTile.getCol(), selectedTile.getRow(), gameController.getBoard());
         List<Move> filteredMoves = new ArrayList<>();
         for (Move move : validMoves) {
-            if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), move.endX(), move.endY())) {
+            if (gameController.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), move.endX(), move.endY())) {
                 filteredMoves.add(move);
             }
         }
@@ -97,7 +103,7 @@ public class ChessBoard extends JPanel {
             int endX = move.endX();
             int endY = move.endY();
             ChessTile targetTile = tiles[endY][endX];
-            if (targetTile.getPiece() != null && targetTile.getPiece().getColor() != gameEngine.getCurrentPlayerColor()) {
+            if (targetTile.getPiece() != null && targetTile.getPiece().getColor() != gameController.getCurrentPlayerColor()) {
                 targetTile.setEnemyHighlighted(true);
             } else {
                 targetTile.setHighlighted(true);
@@ -106,13 +112,11 @@ public class ChessBoard extends JPanel {
     }
 
     private void handleMoveExecution(int col, int row) {
-        if (selectedTile == null) {
-            return;
-        }
+        if (selectedTile == null || gameController == null) return; // Kiểm tra null
         ChessPiece selectedPiece = selectedTile.getPiece();
-        if (selectedPiece != null && selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameEngine.getBoard())) {
-            if (gameEngine.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), col, row)) {
-                gameEngine.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
+        if (selectedPiece != null && selectedPiece.isValidMove(selectedTile.getCol(), selectedTile.getRow(), col, row, gameController.getBoard())) {
+            if (gameController.isMoveValidUnderCheck(selectedTile.getCol(), selectedTile.getRow(), col, row)) {
+                gameController.makeMove(selectedTile.getCol(), selectedTile.getRow(), col, row);
                 repaint();
             }
         }
@@ -135,11 +139,9 @@ public class ChessBoard extends JPanel {
     private class ChessMouseListener extends MouseAdapter {
         @Override
         public void mouseClicked(MouseEvent e) {
+            if (gameController == null || gameController.isGameEnded()) return; // Kiểm tra null
             int col = e.getX() / TILE_SIZE;
             int row = e.getY() / TILE_SIZE;
-            if (gameEngine.isGameEnded()) {
-                return;
-            }
             if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
                 ChessTile clickedTile = tiles[row][col];
                 if (selectedTile == null) {

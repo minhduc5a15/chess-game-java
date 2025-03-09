@@ -22,14 +22,14 @@ public class Player {
     private final PieceColor color;
     private int timeSeconds = INITIAL_TIME_SECONDS;
     private JLabel timeLabel;
-    private final GameEngine gameEngine;
+    private final GameController gameController;
     private Timer timer;
     private final String avatarPath;
 
-    public Player(String name, PieceColor color, GameEngine gameEngine, String avatarPath) {
+    public Player(String name, PieceColor color, GameController gameEngine, String avatarPath) {
         this.name = name;
         this.color = color;
-        this.gameEngine = gameEngine;
+        this.gameController = gameEngine;
         this.avatarPath = avatarPath;
         initializeLabels();
         gameEngine.addTurnChangeListener(this::onTurnChange);
@@ -55,7 +55,7 @@ public class Player {
             timer.stop();
         }
         timer = new Timer(1000, e -> {
-            if (color == gameEngine.getCurrentPlayerColor()) {
+            if (color == gameController.getCurrentPlayerColor()) {
                 if (--timeSeconds <= 0) {
                     timer.stop();
                     JOptionPane.showMessageDialog(null, name + " hết giờ! " + (color == PieceColor.WHITE ? "Đen" : "Trắng") + " thắng!", "Hết giờ", JOptionPane.INFORMATION_MESSAGE);
@@ -103,7 +103,7 @@ public class Player {
         panel.add(createLeftSection(), BorderLayout.WEST);
         panel.add(createRightSection(), BorderLayout.EAST);
 
-        timeLabel.setForeground(color == gameEngine.getCurrentPlayerColor() ? Color.WHITE : Color.BLACK);
+        timeLabel.setForeground(color == gameController.getCurrentPlayerColor() ? Color.WHITE : Color.BLACK);
 
         return panel;
     }

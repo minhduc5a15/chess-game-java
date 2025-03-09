@@ -1,8 +1,11 @@
 package com.minhduc5a12.chess.engine;
 
+import com.minhduc5a12.chess.GameController;
+import com.minhduc5a12.chess.constants.PieceColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,6 +64,34 @@ public class Stockfish {
             logger.error("Error reading Stockfish output", e);
         }
         return output;
+    }
+
+    public void makeMove(GameController gameController) {
+        if (gameController.isGameEnded() || gameController.getCurrentPlayerColor() != PieceColor.BLACK) {
+            return;
+        }
+
+        String fen = gameController.getNotationUtils().getFen();
+        sendCommand("position fen " + fen);
+        sendCommand("go depth 20");
+        List<String> output = getOutput();
+        String bestMove = null;
+        for (String line : output) {
+            if (line.startsWith("bestmove")) {
+                bestMove = line.split(" ")[1];
+                logger.info("Stockfish best move for Black: {}", bestMove);
+                break;
+            }
+        }
+
+        if (bestMove != null && bestMove.length() >= 4) {
+            int startX = bestMove.charAt(0) - 'a';
+            int startY = 7 - (bestMove.charAt(1) - '1');
+            int endX = bestMove.charAt(2) - 'a';
+            int endY = 7 - (bestMove.charAt(3) - '1');
+            String promotion = (bestMove.length() > 4) ? bestMove.substring(4) : null;
+            SwingUtilities.invokeLater(() -> gameController.makeMove(startX, startY, endX, endY, promotion));
+        }
     }
 
     public void close() {
