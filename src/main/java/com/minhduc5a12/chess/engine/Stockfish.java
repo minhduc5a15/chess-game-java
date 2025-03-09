@@ -1,15 +1,21 @@
 package com.minhduc5a12.chess.engine;
 
-import com.minhduc5a12.chess.GameController;
-import com.minhduc5a12.chess.constants.PieceColor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import javax.swing.SwingUtilities;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.minhduc5a12.chess.GameController;
+import com.minhduc5a12.chess.constants.PieceColor;
 
 public class Stockfish {
     private static final Logger logger = LoggerFactory.getLogger(Stockfish.class);
@@ -73,7 +79,7 @@ public class Stockfish {
 
         String fen = gameController.getNotationUtils().getFen();
         sendCommand("position fen " + fen);
-        sendCommand("go depth 20");
+        sendCommand("go depth 25");
         List<String> output = getOutput();
         String bestMove = null;
         for (String line : output) {

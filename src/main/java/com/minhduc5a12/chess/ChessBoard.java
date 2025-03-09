@@ -1,8 +1,12 @@
 package com.minhduc5a12.chess;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -11,12 +15,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.minhduc5a12.chess.model.Move;
-import com.minhduc5a12.chess.pieces.ChessPiece;
+import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ChessBoard extends JPanel {
+import com.minhduc5a12.chess.model.Move;
+import com.minhduc5a12.chess.pieces.ChessPiece;
+
+public final class ChessBoard extends JPanel {
     private static final int BOARD_SIZE = 8;
     private static final int TILE_SIZE = 100;
 
@@ -26,8 +34,9 @@ public class ChessBoard extends JPanel {
     private BufferedImage chessboardImage;
     private static final Logger logger = LoggerFactory.getLogger(ChessBoard.class);
 
+
     public ChessBoard(GameController gameController) {
-        this.gameController = gameController; // Không throw exception nếu null
+        this.gameController = gameController;
         setPreferredSize(new Dimension(BOARD_SIZE * TILE_SIZE, BOARD_SIZE * TILE_SIZE));
         setLayout(new GridLayout(BOARD_SIZE, BOARD_SIZE));
         initializeTiles();
@@ -67,6 +76,8 @@ public class ChessBoard extends JPanel {
             g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             g2d.drawImage(originalImage, 0, 0, 800, 800, null);
             g2d.dispose();
+
+            logger.info("Chessboard image loaded successfully");
         } catch (IOException e) {
             logger.error("Failed to load chessboard image", e);
         }
@@ -78,6 +89,24 @@ public class ChessBoard extends JPanel {
         if (chessboardImage != null) {
             g.drawImage(chessboardImage, 0, 0, this.getWidth(), this.getHeight(), null);
         }
+
+        if (gameController != null && gameController.getLastMove() != null) {
+            Move lastMove = gameController.getLastMove();
+            highlightLastMove(g, lastMove);
+        }
+    }
+
+    private void highlightLastMove(Graphics g, Move lastMove) {
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setColor(new Color(255, 215, 0, 100));
+
+        int startX = lastMove.startX() * TILE_SIZE;
+        int startY = lastMove.startY() * TILE_SIZE;
+        g2d.fillRect(startX, startY, TILE_SIZE, TILE_SIZE);
+
+        int endX = lastMove.endX() * TILE_SIZE;
+        int endY = lastMove.endY() * TILE_SIZE;
+        g2d.fillRect(endX, endY, TILE_SIZE, TILE_SIZE);
     }
 
     private void handleTileSelection(ChessTile clickedTile) {

@@ -170,20 +170,59 @@ public class GameController {
     }
 
     // Getters và Setters
-    public ChessNotationUtils getNotationUtils() { return notationUtils; }
-    public ChessTile[][] getBoard() { return boardManager.getBoard(); }
-    public PieceColor getCurrentPlayerColor() { return currentPlayerColor; }
-    public Move getLastMove() { return lastMove; }
-    public Map<ChessPiece, int[]> getPiecePositions() { return boardManager.getPiecePositions(); }
-    public boolean isGameEnded() { return gameEnded; }
-    public void setLastMove(Move lastMove) { this.lastMove = lastMove; }
-    public void resetMovesWithoutCaptureOrPawn() { this.movesWithoutCaptureOrPawn = 0; }
-    public void incrementMovesWithoutCaptureOrPawn() { this.movesWithoutCaptureOrPawn++; }
-    public ChessBoard getChessBoard() { return chessBoard; }
-    public void addTurnChangeListener(Consumer<PieceColor> listener) { turnChangeListeners.add(listener); }
+    public ChessNotationUtils getNotationUtils() {
+        return notationUtils;
+    }
+
+    public ChessTile[][] getBoard() {
+        return boardManager.getBoard();
+    }
+
+    public PieceColor getCurrentPlayerColor() {
+        return currentPlayerColor;
+    }
+
+    public Move getLastMove() {
+        return lastMove;
+    }
+
+    public Map<ChessPiece, int[]> getPiecePositions() {
+        return boardManager.getPiecePositions();
+    }
+
+    public boolean isGameEnded() {
+        return gameEnded;
+    }
+
+    public void setLastMove(Move lastMove) {
+        this.lastMove = lastMove;
+    }
+
+    public void resetMovesWithoutCaptureOrPawn() {
+        this.movesWithoutCaptureOrPawn = 0;
+    }
+
+    public void incrementMovesWithoutCaptureOrPawn() {
+        this.movesWithoutCaptureOrPawn++;
+    }
+
+    public ChessBoard getChessBoard() {
+        return chessBoard;
+    }
+
+    public void addTurnChangeListener(Consumer<PieceColor> listener) {
+        turnChangeListeners.add(listener);
+    }
+
     public boolean isMoveValidUnderCheck(int startX, int startY, int endX, int endY) {
         return stateChecker.isMoveValidUnderCheck(startX, startY, endX, endY, currentPlayerColor);
     }
-    public int getMovesWithoutCaptureOrPawn() { return movesWithoutCaptureOrPawn; }
-    public List<String> getBoardStates() { return boardStates; }
+
+    public int getMovesWithoutCaptureOrPawn() {
+        return movesWithoutCaptureOrPawn;
+    }
+
+    public List<String> getBoardStates() {
+        return boardStates;
+    }
 }

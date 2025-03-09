@@ -4,13 +4,10 @@ import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.Move;
 import com.minhduc5a12.chess.pieces.*;
 import com.minhduc5a12.chess.utils.SoundPlayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
 public class MoveExecutor {
-    private static final Logger logger = LoggerFactory.getLogger(MoveExecutor.class);
     private final BoardManager boardManager;
     private final JFrame parentFrame;
     private final GameController gameController;
@@ -63,6 +60,9 @@ public class MoveExecutor {
             SoundPlayer.playMoveSound();
         }
 
+        Move move = new Move(startX, startY, endX, endY);
+        gameController.setLastMove(move);
+
         if (piece instanceof King && Math.abs(endX - startX) == 2) {
             performCastling(startY, endX);
             SoundPlayer.playCastleSound();
@@ -74,19 +74,28 @@ public class MoveExecutor {
     private ChessPiece promotePawn(int x, int y, PieceColor color, String promotion) {
         if (promotion != null) {
             return switch (promotion.toLowerCase()) {
-                case "r" -> new Rook(color, color == PieceColor.WHITE ? "images/white_rook.png" : "images/black_rook.png", gameController);
-                case "b" -> new Bishop(color, color == PieceColor.WHITE ? "images/white_bishop.png" : "images/black_bishop.png", gameController);
-                case "n" -> new Knight(color, color == PieceColor.WHITE ? "images/white_knight.png" : "images/black_knight.png", gameController);
-                default -> new Queen(color, color == PieceColor.WHITE ? "images/white_queen.png" : "images/black_queen.png", gameController);
+                case "r" ->
+                        new Rook(color, color == PieceColor.WHITE ? "images/white_rook.png" : "images/black_rook.png", gameController);
+                case "b" ->
+                        new Bishop(color, color == PieceColor.WHITE ? "images/white_bishop.png" : "images/black_bishop.png", gameController);
+                case "n" ->
+                        new Knight(color, color == PieceColor.WHITE ? "images/white_knight.png" : "images/black_knight.png", gameController);
+                default ->
+                        new Queen(color, color == PieceColor.WHITE ? "images/white_queen.png" : "images/black_queen.png", gameController);
             };
         } else {
-            Object[] options = {"Queen", "Rook", "Bishop", "Knight"};
-            int choice = JOptionPane.showOptionDialog(parentFrame, "Promote pawn to:", "Pawn Promotion", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
-            return switch (choice) {
-                case 1 -> new Rook(color, color == PieceColor.WHITE ? "images/white_rook.png" : "images/black_rook.png", gameController);
-                case 2 -> new Bishop(color, color == PieceColor.WHITE ? "images/white_bishop.png" : "images/black_bishop.png", gameController);
-                case 3 -> new Knight(color, color == PieceColor.WHITE ? "images/white_knight.png" : "images/black_knight.png", gameController);
-                default -> new Queen(color, color == PieceColor.WHITE ? "images/white_queen.png" : "images/black_queen.png", gameController);
+            PromotionDialog dialog = new PromotionDialog(parentFrame, color);
+            dialog.setVisible(true);
+            String selectedPromotion = dialog.getSelectedPiece();
+            return switch (selectedPromotion) {
+                case "Rook" ->
+                        new Rook(color, color == PieceColor.WHITE ? "images/white_rook.png" : "images/black_rook.png", gameController);
+                case "Bishop" ->
+                        new Bishop(color, color == PieceColor.WHITE ? "images/white_bishop.png" : "images/black_bishop.png", gameController);
+                case "Knight" ->
+                        new Knight(color, color == PieceColor.WHITE ? "images/white_knight.png" : "images/black_knight.png", gameController);
+                default ->
+                        new Queen(color, color == PieceColor.WHITE ? "images/white_queen.png" : "images/black_queen.png", gameController);
             };
         }
     }

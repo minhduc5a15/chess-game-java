@@ -1,12 +1,19 @@
 package com.minhduc5a12.chess;
 
-import com.minhduc5a12.chess.constants.PieceColor;
-import com.minhduc5a12.chess.pieces.*;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.pieces.Bishop;
+import com.minhduc5a12.chess.pieces.ChessPiece;
+import com.minhduc5a12.chess.pieces.King;
+import com.minhduc5a12.chess.pieces.Knight;
+import com.minhduc5a12.chess.pieces.Pawn;
+import com.minhduc5a12.chess.pieces.Queen;
+import com.minhduc5a12.chess.pieces.Rook;
 
 public class BoardManager {
     private static final Logger logger = LoggerFactory.getLogger(BoardManager.class);

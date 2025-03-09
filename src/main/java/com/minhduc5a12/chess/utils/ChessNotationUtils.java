@@ -106,7 +106,7 @@ public class ChessNotationUtils {
             }
         }
 
-        return castling.length() > 0 ? castling.toString() : "-";
+        return !castling.isEmpty() ? castling.toString() : "-";
     }
 
     private String getEnPassantTarget() {

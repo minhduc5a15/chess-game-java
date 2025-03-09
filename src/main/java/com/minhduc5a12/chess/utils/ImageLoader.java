@@ -24,7 +24,7 @@ public class ImageLoader {
     }
 
     public static void preloadImages() {
-        String[] paths = {"images/white_pawn.png", "images/black_pawn.png", "images/white_rook.png", "images/black_rook.png", "images/white_knight.png", "images/black_knight.png", "images/white_bishop.png", "images/black_bishop.png", "images/white_queen.png", "images/black_queen.png", "images/white_king.png", "images/black_king.png", "images/chessboard.png"};
+        String[] paths = {"images/white_pawn.png", "images/black_pawn.png", "images/white_rook.png", "images/black_rook.png", "images/white_knight.png", "images/black_knight.png", "images/white_bishop.png", "images/black_bishop.png", "images/white_queen.png", "images/black_queen.png", "images/white_king.png", "images/black_king.png"};
         for (String path : paths) {
             getImage(path);
         }
