@@ -24,7 +24,6 @@ public class Knight extends ChessPiece {
         int startRow = start.row();
         int startCol = start.col();
 
-        // 8 nước đi chữ L: (±1, ±2) hoặc (±2, ±1)
         int[][] offsets = {{1, 2}, {1, -2}, {-1, 2}, {-1, -2}, {2, 1}, {2, -1}, {-2, 1}, {-2, -1}};
 
         for (int[] offset : offsets) {

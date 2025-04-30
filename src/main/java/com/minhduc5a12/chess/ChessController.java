@@ -1,24 +1,34 @@
 package com.minhduc5a12.chess;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import com.minhduc5a12.chess.constants.GameMode;
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
-import com.minhduc5a12.chess.pieces.*;
+import com.minhduc5a12.chess.pieces.Bishop;
+import com.minhduc5a12.chess.pieces.ChessPieceMap;
+import com.minhduc5a12.chess.pieces.King;
+import com.minhduc5a12.chess.pieces.Knight;
+import com.minhduc5a12.chess.pieces.Pawn;
+import com.minhduc5a12.chess.pieces.Queen;
+import com.minhduc5a12.chess.pieces.Rook;
 import com.minhduc5a12.chess.players.StockfishPlayer;
 import com.minhduc5a12.chess.ui.GameOverDialog;
 import com.minhduc5a12.chess.ui.PromotionDialog;
 import com.minhduc5a12.chess.utils.BoardUtils;
 import com.minhduc5a12.chess.utils.SoundPlayer;
 
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class ChessController extends BoardManager implements MoveExecutor {
+
     private static final int FIFTY_MOVE_RULE_LIMIT = 50;
 
     private boolean gameEnded;
@@ -69,7 +79,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
 
     private void notifyTurnChanged() {
         for (PlayerPanelListener listener : listeners) {
-            listener.onTurnChanged(currentPlayerColor);
+            listener.onTurnChanged(getCurrentBoardState().getCurrentPlayerColor());
         }
     }
 
@@ -82,6 +92,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
     @Override
     public boolean executeMove(ChessMove move) {
         ChessPiece piece = getPiece(move.start());
+
+        BoardState currentBoardState = getCurrentBoardState();
 
         boolean isCapture = getPiece(move.end()) != null;
         boolean isPawnMove = piece instanceof Pawn;
@@ -109,7 +121,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
         if (BoardUtils.isThreefoldRepetition(this)) {
             gameEnded = true;
             SwingUtilities.invokeLater(() -> {
-                GameOverDialog dialog = new GameOverDialog(frame, "Hòa do lặp lại 3 lần!");
+                GameOverDialog dialog = new GameOverDialog(frame, "Draw");
                 dialog.setVisible(true);
             });
             logger.info("Game ended due to threefold repetition (FIDE)");
@@ -119,16 +131,17 @@ public class ChessController extends BoardManager implements MoveExecutor {
 
         repaintTiles(startTile, endTile);
         if (isCapture || isPawnMove) {
-            halfmoveClock = 0;
+            currentBoardState.clearHalfmoveClock();
         } else {
-            halfmoveClock++;
+
+            currentBoardState.incrementHalfmoveClock();
         }
 
         switchTurn();
         notifyTurnChanged();
         notifyScoreUpdated();
 
-        boolean isCheck = BoardUtils.isKingInCheck(currentPlayerColor, getChessPieceMap());
+        boolean isCheck = BoardUtils.isKingInCheck(currentBoardState.getCurrentPlayerColor(), currentBoardState.getChessPieceMap());
 
         if (isCheck) {
             SoundPlayer.playMoveCheckSound();
@@ -195,7 +208,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
         switchTurn();
         notifyScoreUpdated();
         notifyTurnChanged();
-        halfmoveClock++;
+        getCurrentBoardState().incrementHalfmoveClock();
         executor.submit(this::checkGameEndConditions);
 
         return true;
@@ -252,7 +265,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
         repaintTiles(startTile, endTile, capturedTile);
         logger.info("En passant performed: {} to {}, captured at {}", move.start().toChessNotation(), move.end().toChessNotation(), lastMove.end().toChessNotation());
 
-        halfmoveClock = 0;
+        // halfmoveClock = 0;
+        getCurrentBoardState().clearHalfmoveClock();
         switchTurn();
         notifyScoreUpdated();
         notifyTurnChanged();
@@ -269,10 +283,14 @@ public class ChessController extends BoardManager implements MoveExecutor {
         ChessPiece promotedPiece;
 
         switch (selectedPiece) {
-            case "Queen" -> promotedPiece = new Queen(color);
-            case "Rook" -> promotedPiece = new Rook(color);
-            case "Bishop" -> promotedPiece = new Bishop(color);
-            case "Knight" -> promotedPiece = new Knight(color);
+            case "Queen" ->
+                promotedPiece = new Queen(color);
+            case "Rook" ->
+                promotedPiece = new Rook(color);
+            case "Bishop" ->
+                promotedPiece = new Bishop(color);
+            case "Knight" ->
+                promotedPiece = new Knight(color);
             default -> {
                 promotedPiece = new Queen(color);
                 logger.error("Invalid promotion choice: {}, defaulting to Queen", selectedPiece);
@@ -317,7 +335,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
 
         if (moveSuccessful && stockfishPlayer != null) {
-            if (gameMode == GameMode.PLAYER_VS_AI && currentPlayerColor != humanPlayerColor) {
+            if (gameMode == GameMode.PLAYER_VS_AI && getCurrentBoardState().getCurrentPlayerColor() != humanPlayerColor) {
                 stockfishPlayer.makeMove();
             } else if (gameMode == GameMode.AI_VS_AI) {
                 stockfishPlayer.makeMove();
@@ -328,8 +346,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     private void showGameOverDialog() {
-        String winner = (currentPlayerColor.isWhite()) ? "Đen" : "Trắng";
-        GameOverDialog dialog = new GameOverDialog(frame, "Chiếu hết! Người chơi " + winner + " thắng!");
+        String winner = (getCurrentBoardState().getCurrentPlayerColor().isWhite()) ? "Black" : "White";
+        GameOverDialog dialog = new GameOverDialog(frame, "Checkmate " + winner + " player" + " win!");
         dialog.setVisible(true);
     }
 
@@ -346,27 +364,29 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     private void checkGameEndConditions() {
-        if (BoardUtils.isCheckmate(currentPlayerColor, getChessPieceMap())) {
+        BoardState currentBoardState = getCurrentBoardState();
+
+        if (BoardUtils.isCheckmate(currentBoardState.getCurrentPlayerColor(), getChessPieceMap())) {
             gameEnded = true;
             SwingUtilities.invokeLater(this::showGameOverDialog);
-        } else if (halfmoveClock >= FIFTY_MOVE_RULE_LIMIT) {
+        } else if (currentBoardState.getHalfmoveClock() >= FIFTY_MOVE_RULE_LIMIT) {
             gameEnded = true;
             SwingUtilities.invokeLater(() -> {
-                GameOverDialog dialog = new GameOverDialog(frame, "Hòa do luật 50 nước!");
+                GameOverDialog dialog = new GameOverDialog(frame, "Draw game!!!!");
                 dialog.setVisible(true);
             });
             logger.info("Game ended due to 50-move rule");
         } else if (BoardUtils.isDeadPosition(getChessPieceMap())) {
             gameEnded = true;
             SwingUtilities.invokeLater(() -> {
-                GameOverDialog dialog = new GameOverDialog(frame, "Hòa do không đủ quân để chiếu hết!");
+                GameOverDialog dialog = new GameOverDialog(frame, "Draw game!!!!");
                 dialog.setVisible(true);
             });
             logger.info("Game ended due to dead position (insufficient material)");
-        } else if (BoardUtils.isStalemate(currentPlayerColor, getChessPieceMap())) {
+        } else if (BoardUtils.isStalemate(currentBoardState.getCurrentPlayerColor(), getChessPieceMap())) {
             gameEnded = true;
             SwingUtilities.invokeLater(() -> {
-                GameOverDialog dialog = new GameOverDialog(frame, "Hòa do bất biến (Stalemate)!");
+                GameOverDialog dialog = new GameOverDialog(frame, "Stalemate!");
                 dialog.setVisible(true);
             });
             logger.info("Game ended due to stalemate");
@@ -385,10 +405,11 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     public void resignGame() {
+        PieceColor currentPlayerColor = getCurrentBoardState().getCurrentPlayerColor();
         if (!gameEnded) {
             gameEnded = true;
-            String winner = currentPlayerColor.isWhite() ? "Đen" : "Trắng";
-            String message = "Người chơi " + (currentPlayerColor.isWhite() ? "Trắng" : "Đen") + " đầu hàng! " + winner + " thắng!";
+            String winner = currentPlayerColor.isWhite() ? "BLACK" : "WHITE";
+            String message = "Game resigned by " + currentPlayerColor + ". " + winner + " wins!";
             SwingUtilities.invokeLater(() -> {
                 if (frame != null) {
                     GameOverDialog dialog = new GameOverDialog(frame, message);

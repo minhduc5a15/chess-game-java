@@ -1,18 +1,17 @@
 package com.minhduc5a12.chess.utils;
 
-import com.minhduc5a12.chess.BoardManager;
 import com.minhduc5a12.chess.constants.GameConstants;
-import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
-import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.model.ChessPiece;
+import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.pieces.ChessPieceMap;
 import com.minhduc5a12.chess.pieces.Pawn;
-import com.minhduc5a12.chess.pieces.Rook;
 
 public class ChessNotationUtils {
-    public String getFEN(BoardManager boardManager) {
-        ChessPieceMap pieceMap = boardManager.getChessPieceMap();
+
+    public String getFEN(BoardState boardState) {
+        ChessPieceMap pieceMap = boardState.getChessPieceMap();
         StringBuilder fen = new StringBuilder();
 
         // 1. Vị trí quân cờ
@@ -42,63 +41,41 @@ public class ChessNotationUtils {
 
         // 2. Lượt đi
         fen.append(" ");
-        fen.append(boardManager.getCurrentPlayerColor().isWhite() ? "w" : "b");
+        fen.append(boardState.getCurrentPlayerColor().isWhite() ? "w" : "b");
 
         // 3. Quyền nhập thành
         fen.append(" ");
         StringBuilder castling = new StringBuilder();
-        boolean whiteKingMoved = pieceMap.getPiece(pieceMap.getKingPosition(PieceColor.WHITE)) != null && pieceMap.getPiece(pieceMap.getKingPosition(PieceColor.WHITE)).hasMoved();
-        boolean blackKingMoved = pieceMap.getPiece(pieceMap.getKingPosition(PieceColor.BLACK)) != null && pieceMap.getPiece(pieceMap.getKingPosition(PieceColor.BLACK)).hasMoved();
-
-        ChessPiece whiteRookKingSide = pieceMap.getPiece(new ChessPosition(GameConstants.Board.BOARD_SIZE - 1, 0));
-        ChessPiece whiteRookQueenSide = pieceMap.getPiece(new ChessPosition(0, 0));
-        ChessPiece blackRookKingSide = pieceMap.getPiece(new ChessPosition(GameConstants.Board.BOARD_SIZE - 1, GameConstants.Board.BOARD_SIZE - 1));
-        ChessPiece blackRookQueenSide = pieceMap.getPiece(new ChessPosition(0, GameConstants.Board.BOARD_SIZE - 1));
-
-        if (!whiteKingMoved) {
-            if (whiteRookKingSide instanceof Rook && !whiteRookKingSide.hasMoved()) {
-                castling.append("K");
-            }
-            if (whiteRookQueenSide instanceof Rook && !whiteRookQueenSide.hasMoved()) {
-                castling.append("Q");
-            }
+        if (boardState.canWhiteCastleKingside()) {
+            castling.append("K");
         }
-        if (!blackKingMoved) {
-            if (blackRookKingSide instanceof Rook && !blackRookKingSide.hasMoved()) {
-                castling.append("k");
-            }
-            if (blackRookQueenSide instanceof Rook && !blackRookQueenSide.hasMoved()) {
-                castling.append("q");
-            }
+        if (boardState.canWhiteCastleQueenside()) {
+            castling.append("Q");
+        }
+        if (boardState.canBlackCastleKingside()) {
+            castling.append("k");
+        }
+        if (boardState.canBlackCastleQueenside()) {
+            castling.append("q");
         }
         fen.append(!castling.isEmpty() ? castling.toString() : "-");
 
         // 4. Mục tiêu en passant
         fen.append(" ");
-        ChessMove lastMove = boardManager.getLastMove();
-        if (lastMove != null && pieceMap.getPiece(lastMove.end()) instanceof Pawn && Math.abs(lastMove.start().row() - lastMove.end().row()) == 2) {
-            int enPassantRow = (lastMove.start().row() + lastMove.end().row()) / 2;
-            ChessPosition enPassantTarget = new ChessPosition(lastMove.end().col(), enPassantRow);
-            fen.append(enPassantTarget.toChessNotation());
+        ChessPosition enPassantTargetSquare = boardState.getEnPassantTargetSquare();
+        if (enPassantTargetSquare != null) {
+            fen.append(enPassantTargetSquare.toChessNotation());
         } else {
             fen.append("-");
         }
-
         // 5. Đồng hồ nửa nước
         fen.append(" ");
-        fen.append(boardManager.getHalfmoveClock());
+        fen.append(boardState.getHalfmoveClock());
 
         // 6. Số nước đi đầy đủ
         fen.append(" ");
-        fen.append(boardManager.getFullmoveNumber());
+        fen.append(boardState.getFullmoveNumber());
 
         return fen.toString();
-    }
-
-    public String getPartialFEN(BoardManager boardManager) {
-        String fullFen = getFEN(boardManager);
-        String[] parts = fullFen.split(" ");
-
-        return String.join(" ", parts[0], parts[1], parts[2], parts[3]);
     }
 }

@@ -1,7 +1,15 @@
 package com.minhduc5a12.chess.utils;
 
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.minhduc5a12.chess.BoardManager;
+import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
@@ -9,15 +17,9 @@ import com.minhduc5a12.chess.pieces.Bishop;
 import com.minhduc5a12.chess.pieces.ChessPieceMap;
 import com.minhduc5a12.chess.pieces.King;
 import com.minhduc5a12.chess.pieces.Knight;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
-import java.util.Map;
-
-import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 
 public class BoardUtils {
+
     private static final Logger logger = LoggerFactory.getLogger(BoardUtils.class);
 
     public static boolean isWithinBoard(int x, int y) {
@@ -26,7 +28,9 @@ public class BoardUtils {
 
     public static boolean isKingInCheck(PieceColor color, ChessPieceMap pieceMap) {
         ChessPosition kingPosition = pieceMap.getKingPosition(color);
-        if (kingPosition == null) return false;
+        if (kingPosition == null) {
+            return false;
+        }
 
         PieceColor opponentColor = (color == PieceColor.WHITE) ? PieceColor.BLACK : PieceColor.WHITE;
 
@@ -77,7 +81,9 @@ public class BoardUtils {
 
     public static boolean isMoveValidUnderCheck(ChessMove move, ChessPieceMap pieceMap) {
         ChessPiece piece = pieceMap.getPiece(move.start());
-        if (piece == null) return false;
+        if (piece == null) {
+            return false;
+        }
 
         PieceColor color = piece.getColor();
 
@@ -102,17 +108,16 @@ public class BoardUtils {
         tempMap.removePiece(move.start());
         tempMap.setPiece(move.end(), piece);
 
-
         return tempMap;
     }
 
     // https://en.wikipedia.org/wiki/Threefold_repetition
     public static boolean isThreefoldRepetition(BoardManager boardManager) {
-        Map<String, Integer> history = boardManager.getBoardStateHistory();
+        Map<BoardState, Integer> history = boardManager.getBoardStateHistory();
         ChessNotationUtils notationUtils = boardManager.getNotationUtils(); // Lấy instance từ BoardManager
-        String currentPartialFEN = notationUtils.getPartialFEN(boardManager);
-        int occurrences = history.getOrDefault(currentPartialFEN, 0);
-        logger.debug("Checking threefold repetition (FIDE): partial FEN={}, occurrences={}", currentPartialFEN, occurrences);
+        String currentFEN = notationUtils.getFEN(boardManager.getCurrentBoardState());
+        int occurrences = history.getOrDefault(currentFEN, 0);
+        logger.debug("Checking threefold repetition (FIDE): FEN={}, occurrences={}", currentFEN, occurrences);
         return occurrences >= 3; // Trả về true nếu trạng thái xuất hiện ít nhất 3 lần
     }
 
@@ -125,18 +130,29 @@ public class BoardUtils {
         // Đếm số quân của mỗi bên
         for (ChessPiece piece : pieces.values()) {
             if (piece.getColor().isWhite()) {
-                if (piece instanceof Knight) whiteKnights++;
-                else if (piece instanceof Bishop) whiteBishops++;
-                else if (!(piece instanceof King)) whiteOther++; // Tốt, Xe, Hậu
+                if (piece instanceof Knight) {
+                    whiteKnights++;
+                } else if (piece instanceof Bishop) {
+                    whiteBishops++;
+                } else if (!(piece instanceof King)) {
+                    whiteOther++; // Tốt, Xe, Hậu
+
+                }
             } else { // BLACK
-                if (piece instanceof Knight) blackKnights++;
-                else if (piece instanceof Bishop) blackBishops++;
-                else if (!(piece instanceof King)) blackOther++;
+                if (piece instanceof Knight) {
+                    blackKnights++;
+                } else if (piece instanceof Bishop) {
+                    blackBishops++;
+                } else if (!(piece instanceof King)) {
+                    blackOther++;
+                }
             }
         }
 
         // Tổng số quân khác (ngoài vua, mã, tượng) phải bằng 0
-        if (whiteOther > 0 || blackOther > 0) return false;
+        if (whiteOther > 0 || blackOther > 0) {
+            return false;
+        }
 
         int totalMinorPieces = whiteKnights + whiteBishops + blackKnights + blackBishops;
 
@@ -163,8 +179,11 @@ public class BoardUtils {
             ChessPosition whiteBishopPos = null, blackBishopPos = null;
             for (Map.Entry<ChessPosition, ChessPiece> entry : pieces.entrySet()) {
                 if (entry.getValue() instanceof Bishop) {
-                    if (entry.getValue().getColor().isWhite()) whiteBishopPos = entry.getKey();
-                    else blackBishopPos = entry.getKey();
+                    if (entry.getValue().getColor().isWhite()) {
+                        whiteBishopPos = entry.getKey();
+                    } else {
+                        blackBishopPos = entry.getKey();
+                    }
                 }
             }
             assert whiteBishopPos != null;

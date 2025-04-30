@@ -1,7 +1,7 @@
 package com.minhduc5a12.chess.pieces;
 
-import com.minhduc5a12.chess.BoardManager;
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
@@ -11,20 +11,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pawn extends ChessPiece {
-    private final BoardManager boardManager;
+    private final BoardState boardState;
 
     {
         this.pieceValue = 1;
     }
 
-    public Pawn(PieceColor color, BoardManager boardManager) {
+    public Pawn(PieceColor color, BoardState boardState) {
         super(color, color.isWhite() ? "white_pawn.png" : "black_pawn.png");
-        this.boardManager = boardManager;
+        this.boardState = boardState;
     }
 
     public Pawn(PieceColor color) {
         super(color, color.isWhite() ? "white_pawn.png" : "black_pawn.png");
-        this.boardManager = null;
+        this.boardState = null;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class Pawn extends ChessPiece {
         }
 
         // Bắt tốt qua đường (En passant)
-        ChessMove lastMove = boardManager.getLastMove();
+        ChessMove lastMove = boardState.getLastMove();
         if (lastMove != null) {
             ChessPiece lastMovedPiece = pieceMap.getPiece(lastMove.end());
             if (lastMovedPiece instanceof Pawn && Math.abs(lastMove.start().row() - lastMove.end().row()) == 2 && lastMove.end().row() == startRow && Math.abs(lastMove.end().col() - startCol) == 1) {

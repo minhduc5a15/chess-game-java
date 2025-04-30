@@ -59,11 +59,11 @@ public class GameOverDialog extends JDialog {
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
-        JButton restartButton = createStyledButton("Chơi lại");
+        JButton restartButton = createStyledButton("Restart");
         restartButton.addActionListener(this::onRestart);
         buttonPanel.add(restartButton);
 
-        JButton exitButton = createStyledButton("Thoát");
+        JButton exitButton = createStyledButton("Exit");
         exitButton.addActionListener(this::onExit);
         buttonPanel.add(exitButton);
 

@@ -1,13 +1,14 @@
 package com.minhduc5a12.chess.pieces;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ChessPieceMap {
+
     private final Map<ChessPosition, ChessPiece> pieceMap;
 
     public ChessPieceMap() {
@@ -52,11 +53,23 @@ public class ChessPieceMap {
         return null;
     }
 
+    public King getKing(PieceColor color) {
+        for (Map.Entry<ChessPosition, ChessPiece> entry : pieceMap.entrySet()) {
+            ChessPiece piece = entry.getValue();
+            if (piece instanceof King && piece.getColor() == color) {
+                return (King) piece;
+            }
+        }
+        return null;
+    }
+
     public int getMaterialAdvantage() {
         int whiteMaterial = 0;
         int blackMaterial = 0;
         for (ChessPiece piece : pieceMap.values()) {
-            if (piece == null) continue;
+            if (piece == null) {
+                continue;
+            }
             if (piece.getColor().isWhite()) {
                 whiteMaterial += piece.getPieceValue();
             } else {

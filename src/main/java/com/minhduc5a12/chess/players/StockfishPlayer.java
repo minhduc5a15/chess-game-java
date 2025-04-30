@@ -1,5 +1,12 @@
 package com.minhduc5a12.chess.players;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.minhduc5a12.chess.ChessController;
 import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
@@ -7,12 +14,6 @@ import com.minhduc5a12.chess.engine.Stockfish;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class StockfishPlayer {
     private static final Logger logger = LoggerFactory.getLogger(StockfishPlayer.class);
@@ -35,7 +36,7 @@ public class StockfishPlayer {
         executor.schedule(() -> {
             if (chessController.isGameEnded()) return;
             try {
-                String bestMoveStr = stockfishEngine.getBestMove(chessNotationUtils.getFEN(chessController));
+                String bestMoveStr = stockfishEngine.getBestMove(chessNotationUtils.getFEN(chessController.getCurrentBoardState()));
                 if (bestMoveStr != null) {
                     String startPos = bestMoveStr.substring(0, 2);
                     String endPos = bestMoveStr.substring(2, 4);

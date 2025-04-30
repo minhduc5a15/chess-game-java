@@ -1,12 +1,30 @@
 package com.minhduc5a12.chess.ui;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Frame;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.geom.RoundRectangle2D;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ResignDialog extends JDialog {
     private static final Logger logger = LoggerFactory.getLogger(ResignDialog.class);
@@ -14,7 +32,7 @@ public class ResignDialog extends JDialog {
     private boolean confirmed = false;
 
     public ResignDialog(Frame parent, String message) {
-        super(parent, "Xác nhận từ bỏ", true);
+        super(parent, "Are you sure you want to resign?", true);
         this.parentFrame = (JFrame) parent;
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(30, 30, 30));
@@ -60,11 +78,11 @@ public class ResignDialog extends JDialog {
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
 
-        JButton confirmButton = createStyledButton("Xác nhận");
+        JButton confirmButton = createStyledButton("Confirm");
         confirmButton.addActionListener(this::onConfirm);
         buttonPanel.add(confirmButton);
 
-        JButton cancelButton = createStyledButton("Hủy");
+        JButton cancelButton = createStyledButton("cancel");
         cancelButton.addActionListener(this::onCancel);
         buttonPanel.add(cancelButton);
 

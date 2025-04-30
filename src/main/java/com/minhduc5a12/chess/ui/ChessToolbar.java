@@ -2,6 +2,7 @@ package com.minhduc5a12.chess.ui;
 
 import com.minhduc5a12.chess.ChessBoard;
 import com.minhduc5a12.chess.ChessController;
+import com.minhduc5a12.chess.constants.GameMode;
 import com.minhduc5a12.chess.utils.ImageLoader;
 
 import javax.swing.*;
@@ -31,13 +32,15 @@ public class ChessToolbar extends JPanel {
             chessBoard.flipBoard();
         }));
 
-        add(createButton("Resign", "images/resign.png", e -> {
-            ResignDialog dialog = new ResignDialog((Frame) SwingUtilities.getWindowAncestor(this), "Are you sure you want to resign?");
-            dialog.setVisible(true);
-            if (dialog.isConfirmed()) {
-                chessController.resignGame();
-            }
-        }));
+        if (chessController.getGameMode() != GameMode.AI_VS_AI) {
+            add(createButton("Resign", "images/resign.png", e -> {
+                ResignDialog dialog = new ResignDialog((Frame) SwingUtilities.getWindowAncestor(this), "Are you sure you want to resign?");
+                dialog.setVisible(true);
+                if (dialog.isConfirmed()) {
+                    chessController.resignGame( );
+                }
+            }));
+        }
 
         add(createButton("Move Back", "images/back.png", e -> {
 //            chessController.undoMove();
