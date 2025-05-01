@@ -18,7 +18,6 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -28,12 +27,10 @@ import org.slf4j.LoggerFactory;
 
 public class ResignDialog extends JDialog {
     private static final Logger logger = LoggerFactory.getLogger(ResignDialog.class);
-    private final JFrame parentFrame;
     private boolean confirmed = false;
 
     public ResignDialog(Frame parent, String message) {
         super(parent, "Are you sure you want to resign?", true);
-        this.parentFrame = (JFrame) parent;
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(30, 30, 30));
         setResizable(false);

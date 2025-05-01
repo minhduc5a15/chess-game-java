@@ -1,16 +1,16 @@
 package com.minhduc5a12.chess.pieces;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.minhduc5a12.chess.constants.PieceColor;
-import com.minhduc5a12.chess.exception.InvalidPositionException;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.utils.BoardUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Queen extends ChessPiece {
+
     {
         this.pieceValue = 9;
     }

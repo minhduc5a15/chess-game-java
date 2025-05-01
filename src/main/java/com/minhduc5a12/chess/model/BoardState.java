@@ -4,10 +4,20 @@ import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.pieces.ChessPieceMap;
 import com.minhduc5a12.chess.pieces.King;
 import com.minhduc5a12.chess.pieces.Pawn;
+import com.minhduc5a12.chess.pieces.Rook;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
 
 import java.util.Objects;
 
+/**
+ * A class representing the state of a chessboard, including piece positions,
+ * game state, and castling availability. Uses Cartesian coordinates (col, row)
+ * for handling positions on the board, where col (0-7) corresponds to files
+ * (a-h) and row (0-7) corresponds to ranks (1-8). Validates moves to ensure
+ * they are within the board boundaries, throwing an
+ * {@link IllegalStateException} if invalid positions (e.g., null king
+ * positions) are detected.
+ */
 public final class BoardState {
 
     private final ChessPieceMap chessPieceMap;
@@ -21,6 +31,16 @@ public final class BoardState {
     private boolean blackCanCastleKingside = true;
     private boolean blackCanCastleQueenside = true;
 
+    /**
+     * Constructs a new board state with the given piece map and initializes
+     * castling availability. Validates the presence and position of both kings,
+     * throwing an exception if either is missing.
+     *
+     * @param chessPieceMap the map containing all pieces and their positions on
+     *                      the board
+     * @throws IllegalStateException if the white or black king's position is
+     *                               null
+     */
     public BoardState(ChessPieceMap chessPieceMap) {
         this.chessPieceMap = chessPieceMap;
         if (!chessPieceMap.getPieceMap().isEmpty()) {
@@ -51,6 +71,34 @@ public final class BoardState {
     public void setLastMove(ChessMove lastMove) {
         this.lastMove = lastMove;
         updateEnPassantTargetSquare();
+
+        if (lastMove != null) {
+            ChessPiece movedPiece = chessPieceMap.getPiece(lastMove.start());
+            ChessPosition start = lastMove.start();
+            if (movedPiece instanceof King) {
+                if (movedPiece.getColor() == PieceColor.WHITE) {
+                    whiteCanCastleKingside = false;
+                    whiteCanCastleQueenside = false;
+                } else {
+                    blackCanCastleKingside = false;
+                    blackCanCastleQueenside = false;
+                }
+            } else if (movedPiece instanceof Rook) {
+                if (movedPiece.getColor() == PieceColor.WHITE) {
+                    if (start.equals(ChessPosition.get("H1"))) {
+                        whiteCanCastleKingside = false;
+                    } else if (start.equals(ChessPosition.get("A1"))) {
+                        whiteCanCastleQueenside = false;
+                    }
+                } else {
+                    if (start.equals(ChessPosition.get("H8"))) {
+                        blackCanCastleKingside = false;
+                    } else if (start.equals(ChessPosition.get("A8"))) {
+                        blackCanCastleQueenside = false;
+                    }
+                }
+            }
+        }
     }
 
     public ChessMove getLastMove() {
@@ -69,10 +117,18 @@ public final class BoardState {
         return halfmoveClock;
     }
 
+    /**
+     * Resets the halfmove clock to zero, typically after a capture or pawn
+     * move.
+     */
     public void clearHalfmoveClock() {
         this.halfmoveClock = 0;
     }
 
+    /**
+     * Increments the halfmove clock by one, used for moves that do not involve
+     * captures or pawn advances.
+     */
     public void incrementHalfmoveClock() {
         this.halfmoveClock++;
     }
@@ -81,6 +137,9 @@ public final class BoardState {
         return fullmoveNumber;
     }
 
+    /**
+     * Increments the fullmove number by one, typically after Black's move.
+     */
     public void incrementFullmoveNumber() {
         this.fullmoveNumber++;
     }
@@ -89,6 +148,11 @@ public final class BoardState {
         return enPassantTargetSquare;
     }
 
+    /**
+     * Updates the en passant target square based on the last move. Sets the
+     * target square if the last move was a two-square pawn advance; otherwise,
+     * clears it.
+     */
     public void updateEnPassantTargetSquare() {
         if (lastMove != null && chessPieceMap.getPiece(lastMove.end()) instanceof Pawn && Math.abs(lastMove.start().row() - lastMove.end().row()) == 2) {
             int enPassantRow = (lastMove.start().row() + lastMove.end().row()) / 2;
@@ -114,11 +178,24 @@ public final class BoardState {
         return blackCanCastleQueenside;
     }
 
+    /**
+     * Generates a hash code for the board state based on its FEN
+     * representation.
+     *
+     * @return the hash code of the board's FEN string
+     */
     @Override
     public int hashCode() {
         return new ChessNotationUtils().getFEN(this).hashCode();
     }
 
+    /**
+     * Compares this board state with another object for equality based on their
+     * FEN representations.
+     *
+     * @param obj the object to compare with
+     * @return true if the FEN representations are equal, false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

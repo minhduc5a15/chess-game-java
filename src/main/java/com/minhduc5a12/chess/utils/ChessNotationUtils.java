@@ -2,19 +2,27 @@ package com.minhduc5a12.chess.utils;
 
 import com.minhduc5a12.chess.constants.GameConstants;
 import com.minhduc5a12.chess.model.BoardState;
-import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.pieces.ChessPieceMap;
-import com.minhduc5a12.chess.pieces.Pawn;
 
 public class ChessNotationUtils {
 
+    /**
+     * Converts the current board state to a FEN (Forsyth-Edwards Notation)
+     * string. The FEN string represents the position of pieces on the board,
+     * the active player, castling availability, en passant target square,
+     * halfmove clock, and fullmove number.
+     *
+     * @param boardState The current state of the chessboard.
+     * @return A FEN string representing the current board state.
+     */
     public String getFEN(BoardState boardState) {
         ChessPieceMap pieceMap = boardState.getChessPieceMap();
         StringBuilder fen = new StringBuilder();
+        // Note: FEN uses a descartes coordinate system (col, row). e.g., a1 = (0, 0)
 
-        // 1. Vị trí quân cờ
+        // 1. Chessboard position
         for (int row = GameConstants.Board.BOARD_SIZE - 1; row >= 0; row--) {
             int emptyCount = 0;
             for (int col = 0; col <= GameConstants.Board.BOARD_SIZE - 1; col++) {
@@ -39,11 +47,11 @@ public class ChessNotationUtils {
             }
         }
 
-        // 2. Lượt đi
+        // 2. Current player
         fen.append(" ");
         fen.append(boardState.getCurrentPlayerColor().isWhite() ? "w" : "b");
 
-        // 3. Quyền nhập thành
+        // 3. Castling availability
         fen.append(" ");
         StringBuilder castling = new StringBuilder();
         if (boardState.canWhiteCastleKingside()) {
@@ -60,7 +68,7 @@ public class ChessNotationUtils {
         }
         fen.append(!castling.isEmpty() ? castling.toString() : "-");
 
-        // 4. Mục tiêu en passant
+        // 4. En passant target square
         fen.append(" ");
         ChessPosition enPassantTargetSquare = boardState.getEnPassantTargetSquare();
         if (enPassantTargetSquare != null) {
@@ -68,11 +76,11 @@ public class ChessNotationUtils {
         } else {
             fen.append("-");
         }
-        // 5. Đồng hồ nửa nước
+        // 5. Halfmove clock
         fen.append(" ");
         fen.append(boardState.getHalfmoveClock());
 
-        // 6. Số nước đi đầy đủ
+        // 6. Fullmove number
         fen.append(" ");
         fen.append(boardState.getFullmoveNumber());
 

@@ -110,11 +110,13 @@ public class ChessController extends BoardManager implements MoveExecutor {
             piece = promotePawn(move.end(), piece.getColor());
             SoundPlayer.playMoveSound();
         }
+
+        setLastMove(move);
+
         removePiece(move.end());
         setPiece(move.end(), piece);
         removePiece(move.start());
 
-        setLastMove(move);
         updatePieceMovement(move);
 
         updateBoardStateHistory();
@@ -133,7 +135,6 @@ public class ChessController extends BoardManager implements MoveExecutor {
         if (isCapture || isPawnMove) {
             currentBoardState.clearHalfmoveClock();
         } else {
-
             currentBoardState.incrementHalfmoveClock();
         }
 
@@ -192,6 +193,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
         ChessTile rookStartTile = getTile(rookPos);
         ChessTile rookEndTile = getTiles()[kingRow][rookTargetCol];
 
+        setLastMove(new ChessMove(kingPos, new ChessPosition(kingTargetCol, kingRow)));
+
         removePiece(kingPos);
         removePiece(rookPos);
         setPiece(new ChessPosition(kingTargetCol, kingRow), king);
@@ -199,7 +202,6 @@ public class ChessController extends BoardManager implements MoveExecutor {
         king.setHasMoved(true);
         rook.setHasMoved(true);
 
-        setLastMove(new ChessMove(kingPos, new ChessPosition(kingTargetCol, kingRow)));
         updateBoardStateHistory();
 
         repaintTiles(kingStartTile, kingEndTile, rookStartTile, rookEndTile);
@@ -255,17 +257,17 @@ public class ChessController extends BoardManager implements MoveExecutor {
         ChessPiece capturedPiece = getPiece(lastMove.end());
         notifyPieceCaptured(piece.getColor(), capturedPiece);
 
+        setLastMove(move);
+
         removePiece(lastMove.end());
         removePiece(move.start());
         setPiece(move.end(), piece);
-        setLastMove(move);
         updatePieceMovement(move);
         updateBoardStateHistory();
 
         repaintTiles(startTile, endTile, capturedTile);
         logger.info("En passant performed: {} to {}, captured at {}", move.start().toChessNotation(), move.end().toChessNotation(), lastMove.end().toChessNotation());
 
-        // halfmoveClock = 0;
         getCurrentBoardState().clearHalfmoveClock();
         switchTurn();
         notifyScoreUpdated();
@@ -283,14 +285,10 @@ public class ChessController extends BoardManager implements MoveExecutor {
         ChessPiece promotedPiece;
 
         switch (selectedPiece) {
-            case "Queen" ->
-                promotedPiece = new Queen(color);
-            case "Rook" ->
-                promotedPiece = new Rook(color);
-            case "Bishop" ->
-                promotedPiece = new Bishop(color);
-            case "Knight" ->
-                promotedPiece = new Knight(color);
+            case "Queen" -> promotedPiece = new Queen(color);
+            case "Rook" -> promotedPiece = new Rook(color);
+            case "Bishop" -> promotedPiece = new Bishop(color);
+            case "Knight" -> promotedPiece = new Knight(color);
             default -> {
                 promotedPiece = new Queen(color);
                 logger.error("Invalid promotion choice: {}, defaulting to Queen", selectedPiece);

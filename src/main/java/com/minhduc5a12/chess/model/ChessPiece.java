@@ -11,7 +11,7 @@ import java.awt.*;
 import java.util.List;
 
 public abstract class ChessPiece implements Comparable<ChessPiece> {
-    private static final Logger logger = LoggerFactory.getLogger(ChessPiece.class);
+    protected static final Logger logger = LoggerFactory.getLogger(ChessPiece.class);
     private final PieceColor color;
     private final Image image;
     protected int pieceValue = 0;

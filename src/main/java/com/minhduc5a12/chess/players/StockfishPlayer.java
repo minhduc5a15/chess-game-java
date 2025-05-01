@@ -16,6 +16,7 @@ import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
 
 public class StockfishPlayer {
+
     private static final Logger logger = LoggerFactory.getLogger(StockfishPlayer.class);
     private final Stockfish stockfishEngine;
     private final ChessController chessController;
@@ -34,7 +35,9 @@ public class StockfishPlayer {
 
     public void makeMove() {
         executor.schedule(() -> {
-            if (chessController.isGameEnded()) return;
+            if (chessController.isGameEnded()) {
+                return;
+            }
             try {
                 String bestMoveStr = stockfishEngine.getBestMove(chessNotationUtils.getFEN(chessController.getCurrentBoardState()));
                 if (bestMoveStr != null) {

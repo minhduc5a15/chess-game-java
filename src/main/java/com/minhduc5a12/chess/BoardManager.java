@@ -1,28 +1,21 @@
 package com.minhduc5a12.chess;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.minhduc5a12.chess.constants.GameConstants;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
-import com.minhduc5a12.chess.pieces.Bishop;
-import com.minhduc5a12.chess.pieces.ChessPieceMap;
-import com.minhduc5a12.chess.pieces.King;
-import com.minhduc5a12.chess.pieces.Knight;
-import com.minhduc5a12.chess.pieces.Pawn;
-import com.minhduc5a12.chess.pieces.Queen;
-import com.minhduc5a12.chess.pieces.Rook;
+import com.minhduc5a12.chess.pieces.*;
 import com.minhduc5a12.chess.utils.BoardUtils;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class BoardManager {
 
@@ -191,6 +184,7 @@ public class BoardManager {
         ChessPiece piece = getPiece(move.end());
         if (piece != null) {
             piece.setHasMoved(true);
+            logger.info("Updated piece movement: {}, hasMoved={}", piece, piece.hasMoved());
         }
     }
 
@@ -273,5 +267,4 @@ public class BoardManager {
             endTile.setLastMove(true);
         }
     }
-
 }

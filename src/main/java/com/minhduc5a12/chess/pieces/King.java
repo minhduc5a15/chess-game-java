@@ -1,13 +1,13 @@
 package com.minhduc5a12.chess.pieces;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.ChessMove;
 import com.minhduc5a12.chess.model.ChessPiece;
 import com.minhduc5a12.chess.model.ChessPosition;
 import com.minhduc5a12.chess.utils.BoardUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class King extends ChessPiece {
     {
@@ -61,6 +61,11 @@ public class King extends ChessPiece {
         if (BoardUtils.isKingInCheck(getColor(), pieceMap)) {
             return false;
         }
+
+        if (hasMoved()) {
+            return false;
+        }
+
         int row = start.row();
         ChessPosition rookPos = new ChessPosition(7, row);
         ChessPiece rook = pieceMap.getPiece(rookPos);
@@ -89,8 +94,13 @@ public class King extends ChessPiece {
         if (BoardUtils.isKingInCheck(getColor(), pieceMap)) {
             return false;
         }
+
+        if (hasMoved()) {
+            return false;
+        }
+
         int row = start.row();
-        ChessPosition rookPos = new ChessPosition(0, row); // a1 hoặc a8
+        ChessPosition rookPos = new ChessPosition(0, row);
         ChessPiece rook = pieceMap.getPiece(rookPos);
 
         if (!(rook instanceof Rook) || rook.hasMoved()) {

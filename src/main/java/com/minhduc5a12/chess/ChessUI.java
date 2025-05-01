@@ -20,7 +20,7 @@ public class ChessUI {
         this.chessController = new ChessController();
         configureGame(this.chessController, gameMode, selectedColor);
         this.frame = new JFrame("Chess Game");
-        chessController.setFrame(frame); // Thêm dòng này
+        chessController.setFrame(frame);
         setupUI();
     }
 

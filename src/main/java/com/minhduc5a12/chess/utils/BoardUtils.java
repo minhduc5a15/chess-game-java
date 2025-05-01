@@ -1,13 +1,6 @@
 package com.minhduc5a12.chess.utils;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.minhduc5a12.chess.BoardManager;
-import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.model.BoardState;
 import com.minhduc5a12.chess.model.ChessMove;
@@ -17,6 +10,13 @@ import com.minhduc5a12.chess.pieces.Bishop;
 import com.minhduc5a12.chess.pieces.ChessPieceMap;
 import com.minhduc5a12.chess.pieces.King;
 import com.minhduc5a12.chess.pieces.Knight;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 
 public class BoardUtils {
 
@@ -116,7 +116,7 @@ public class BoardUtils {
         Map<BoardState, Integer> history = boardManager.getBoardStateHistory();
         ChessNotationUtils notationUtils = boardManager.getNotationUtils(); // Lấy instance từ BoardManager
         String currentFEN = notationUtils.getFEN(boardManager.getCurrentBoardState());
-        int occurrences = history.getOrDefault(currentFEN, 0);
+        int occurrences = history.getOrDefault(boardManager.getCurrentBoardState(), 0);
         logger.debug("Checking threefold repetition (FIDE): FEN={}, occurrences={}", currentFEN, occurrences);
         return occurrences >= 3; // Trả về true nếu trạng thái xuất hiện ít nhất 3 lần
     }
