@@ -7,12 +7,12 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.minhduc5a12.chess.ChessController;
-import com.minhduc5a12.chess.ChessTile;
 import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.core.model.ChessMove;
+import com.minhduc5a12.chess.core.model.ChessPosition;
 import com.minhduc5a12.chess.engine.Stockfish;
-import com.minhduc5a12.chess.model.ChessMove;
-import com.minhduc5a12.chess.model.ChessPosition;
+import com.minhduc5a12.chess.game.ChessController;
+import com.minhduc5a12.chess.ui.board.ChessTile;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
 
 public class StockfishPlayer {
@@ -21,7 +21,6 @@ public class StockfishPlayer {
     private final Stockfish stockfishEngine;
     private final ChessController chessController;
     private final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    private final ChessNotationUtils chessNotationUtils = new ChessNotationUtils();
     private static final int MOVE_DELAY_TIME = 1500;
     private final PieceColor stockfishColor;
 
@@ -39,7 +38,7 @@ public class StockfishPlayer {
                 return;
             }
             try {
-                String bestMoveStr = stockfishEngine.getBestMove(chessNotationUtils.getFEN(chessController.getCurrentBoardState()));
+                String bestMoveStr = stockfishEngine.getBestMove(ChessNotationUtils.getFEN(chessController.getCurrentBoardState()));
                 if (bestMoveStr != null) {
                     String startPos = bestMoveStr.substring(0, 2);
                     String endPos = bestMoveStr.substring(2, 4);

@@ -1,10 +1,5 @@
 package com.minhduc5a12.chess.utils;
 
-import javazoom.jl.decoder.JavaLayerException;
-import javazoom.jl.player.Player;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -12,7 +7,14 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javazoom.jl.decoder.JavaLayerException;
+import javazoom.jl.player.Player;
+
 public class SoundPlayer {
+
     private static final Logger logger = LoggerFactory.getLogger(SoundPlayer.class);
     private static final ExecutorService soundExecutor = Executors.newFixedThreadPool(2);
     private static final Map<String, Boolean> soundCache = new HashMap<>();
@@ -46,7 +48,7 @@ public class SoundPlayer {
                 if (inputStream != null) {
                     try {
                         inputStream.close();
-                    } catch (Exception e) {
+                    } catch (java.io.IOException | SecurityException e) {
                         logger.error("Error closing input stream for: {}", soundFilePath, e);
                     }
                 }
@@ -83,7 +85,7 @@ public class SoundPlayer {
                     if (inputStream != null) {
                         try {
                             inputStream.close();
-                        } catch (Exception e) {
+                        } catch (java.io.IOException | SecurityException e) {
                             logger.error("Error closing preload stream: {}", sound, e);
                         }
                     }

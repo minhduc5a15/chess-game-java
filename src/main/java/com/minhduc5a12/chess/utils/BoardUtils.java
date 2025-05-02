@@ -1,22 +1,22 @@
 package com.minhduc5a12.chess.utils;
 
-import com.minhduc5a12.chess.BoardManager;
-import com.minhduc5a12.chess.constants.PieceColor;
-import com.minhduc5a12.chess.model.BoardState;
-import com.minhduc5a12.chess.model.ChessMove;
-import com.minhduc5a12.chess.model.ChessPiece;
-import com.minhduc5a12.chess.model.ChessPosition;
-import com.minhduc5a12.chess.pieces.Bishop;
-import com.minhduc5a12.chess.pieces.ChessPieceMap;
-import com.minhduc5a12.chess.pieces.King;
-import com.minhduc5a12.chess.pieces.Knight;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
+import com.minhduc5a12.chess.constants.PieceColor;
+import com.minhduc5a12.chess.core.model.BoardState;
+import com.minhduc5a12.chess.core.model.ChessMove;
+import com.minhduc5a12.chess.core.model.ChessPiece;
+import com.minhduc5a12.chess.core.model.ChessPosition;
+import com.minhduc5a12.chess.core.pieces.Bishop;
+import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
+import com.minhduc5a12.chess.core.pieces.King;
+import com.minhduc5a12.chess.core.pieces.Knight;
+import com.minhduc5a12.chess.game.BoardManager;
 
 public class BoardUtils {
 
@@ -114,8 +114,7 @@ public class BoardUtils {
     // https://en.wikipedia.org/wiki/Threefold_repetition
     public static boolean isThreefoldRepetition(BoardManager boardManager) {
         Map<BoardState, Integer> history = boardManager.getBoardStateHistory();
-        ChessNotationUtils notationUtils = boardManager.getNotationUtils(); // Lấy instance từ BoardManager
-        String currentFEN = notationUtils.getFEN(boardManager.getCurrentBoardState());
+        String currentFEN = ChessNotationUtils.getFEN(boardManager.getCurrentBoardState());
         int occurrences = history.getOrDefault(boardManager.getCurrentBoardState(), 0);
         logger.debug("Checking threefold repetition (FIDE): FEN={}, occurrences={}", currentFEN, occurrences);
         return occurrences >= 3; // Trả về true nếu trạng thái xuất hiện ít nhất 3 lần
@@ -211,7 +210,6 @@ public class BoardUtils {
                 for (ChessMove move : moves) {
                     ChessPieceMap tempMap = simulateMove(move, pieceMap);
                     if (!isKingInCheck(currentPlayerColor, tempMap)) {
-                        logger.debug("Valid move found for {}: {} to {}", piece.getClass().getSimpleName(), start.toChessNotation(), move.end().toChessNotation());
                         return false;
                     }
                 }

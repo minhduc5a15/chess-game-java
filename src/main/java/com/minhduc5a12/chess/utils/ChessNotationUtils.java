@@ -1,10 +1,10 @@
 package com.minhduc5a12.chess.utils;
 
 import com.minhduc5a12.chess.constants.GameConstants;
-import com.minhduc5a12.chess.model.BoardState;
-import com.minhduc5a12.chess.model.ChessPiece;
-import com.minhduc5a12.chess.model.ChessPosition;
-import com.minhduc5a12.chess.pieces.ChessPieceMap;
+import com.minhduc5a12.chess.core.model.BoardState;
+import com.minhduc5a12.chess.core.model.ChessPiece;
+import com.minhduc5a12.chess.core.model.ChessPosition;
+import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
 
 public class ChessNotationUtils {
 
@@ -17,7 +17,7 @@ public class ChessNotationUtils {
      * @param boardState The current state of the chessboard.
      * @return A FEN string representing the current board state.
      */
-    public String getFEN(BoardState boardState) {
+    public static String getFEN(BoardState boardState) {
         ChessPieceMap pieceMap = boardState.getChessPieceMap();
         StringBuilder fen = new StringBuilder();
         // Note: FEN uses a descartes coordinate system (col, row). e.g., a1 = (0, 0)

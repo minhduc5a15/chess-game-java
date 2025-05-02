@@ -1,14 +1,19 @@
 package com.minhduc5a12.chess.engine;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Stockfish {
     private static final Logger logger = LoggerFactory.getLogger(Stockfish.class);
@@ -52,7 +57,7 @@ public class Stockfish {
             logger.debug("Sending command to Stockfish: {}", command);
             writer.write(command + "\n");
             writer.flush();
-        } catch (Exception e) {
+        } catch (IOException | IllegalStateException e) {
             logger.error("Error sending command to Stockfish: {}", command, e);
             throw new RuntimeException("Error sending command to Stockfish", e);
         }
@@ -74,7 +79,10 @@ public class Stockfish {
 
     public String getBestMove(String fen) {
         sendCommand("position fen " + fen);
-        sendCommand("go depth 10");
+        Random random = new Random();
+        // random depth from 20 to 26
+        int depth = random.nextInt(7) + 20;
+        sendCommand("go depth " + depth);
         List<String> output = getOutput();
         for (String line : output) {
             if (line.startsWith("bestmove")) {

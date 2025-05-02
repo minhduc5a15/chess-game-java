@@ -1,19 +1,24 @@
 package com.minhduc5a12.chess.utils;
 
-import com.minhduc5a12.chess.constants.GameConstants;
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+
 import org.apache.batik.transcoder.TranscoderInput;
 import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.ImageTranscoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
+import com.minhduc5a12.chess.constants.GameConstants;
 
 public class ImageLoader {
     private static final Map<String, Image> imageCache = new HashMap<>();
@@ -31,10 +36,6 @@ public class ImageLoader {
                 return null;
             }
         });
-    }
-
-    public static Image getSvg(String svgPath, int width, int height) {
-        return getSvg(svgPath, width, height, null);
     }
 
     public static Image getSvg(String svgPath, int width, int height, Color color) {
@@ -89,8 +90,11 @@ public class ImageLoader {
             }
 
             return renderedImage;
-        } catch (Exception e) {
+        } catch (IOException | IllegalStateException e) {
             log.error("Cannot load SVG: {}", svgPath, e);
+            return null;
+        } catch (org.apache.batik.transcoder.TranscoderException e) {
+            log.error("Error during SVG transcoding: {}", svgPath, e);
             return null;
         }
     }
