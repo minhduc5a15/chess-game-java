@@ -1,22 +1,29 @@
 package com.minhduc5a12.chess.game;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.minhduc5a12.chess.constants.GameConstants;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.core.model.BoardState;
 import com.minhduc5a12.chess.core.model.ChessMove;
 import com.minhduc5a12.chess.core.model.ChessPiece;
 import com.minhduc5a12.chess.core.model.ChessPosition;
-import com.minhduc5a12.chess.core.pieces.*;
+import com.minhduc5a12.chess.core.pieces.Bishop;
+import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
+import com.minhduc5a12.chess.core.pieces.King;
+import com.minhduc5a12.chess.core.pieces.Knight;
+import com.minhduc5a12.chess.core.pieces.Pawn;
+import com.minhduc5a12.chess.core.pieces.Queen;
+import com.minhduc5a12.chess.core.pieces.Rook;
 import com.minhduc5a12.chess.ui.board.ChessTile;
 import com.minhduc5a12.chess.utils.BoardUtils;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class BoardManager {
 
@@ -202,7 +209,7 @@ public class BoardManager {
         setPiece(6, backRow, new Knight(color));
         setPiece(7, backRow, new Rook(color));
         for (int col = 0; col < 8; col++) {
-            setPiece(col, pawnRow, color.isWhite() && col < 1 ? new Queen(color) : new Pawn(color, this.currentBoardState));
+            setPiece(col, pawnRow, new Pawn(color, this.currentBoardState));
         }
     }
 
