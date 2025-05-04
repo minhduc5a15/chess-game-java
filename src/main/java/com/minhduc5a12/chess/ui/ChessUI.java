@@ -17,11 +17,20 @@ import com.minhduc5a12.chess.ui.components.panels.ChessToolbar;
 import com.minhduc5a12.chess.ui.components.panels.MoveHistoryPanel;
 import com.minhduc5a12.chess.ui.components.panels.PlayerPanel;
 
+/**
+ * Manages the user interface for the chess game.
+ */
 public class ChessUI {
     private final ChessController chessController;
     private final JFrame frame;
     private static final Logger logger = LoggerFactory.getLogger(ChessUI.class);
 
+    /**
+     * Constructs a ChessUI with the specified game mode and player color.
+     *
+     * @param gameMode      the game mode (e.g., PLAYER_VS_PLAYER, PLAYER_VS_AI, AI_VS_AI)
+     * @param selectedColor the color chosen for the human player in PLAYER_VS_AI mode
+     */
     public ChessUI(int gameMode, PieceColor selectedColor) {
         this.chessController = new ChessController();
         configureGame(this.chessController, gameMode, selectedColor);
@@ -88,14 +97,16 @@ public class ChessUI {
         });
     }
 
+    /**
+     * Displays the chess game UI.
+     */
     public void show() {
         frame.setVisible(true);
     }
 
     private void configureGame(ChessController controller, int mode, PieceColor playerColor) {
         switch (mode) {
-            case GameMode.PLAYER_VS_PLAYER -> {
-            }
+            case GameMode.PLAYER_VS_PLAYER -> controller.setPlayerVsPlayer();
             case GameMode.PLAYER_VS_AI -> controller.setPlayerVsAI(playerColor);
             case GameMode.AI_VS_AI -> controller.setAIVsAI();
         }

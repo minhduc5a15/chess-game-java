@@ -200,7 +200,6 @@ public class ChessToolbar extends JPanel implements GameStateListener {
      * changes via GameStateListener.
      */
     public void refresh() {
-        logger.debug("Refreshing toolbar");
         SwingUtilities.invokeLater(() -> {
             updateButtonLayout();
             logButtonStates();

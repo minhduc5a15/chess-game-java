@@ -10,8 +10,12 @@ public record ChessMove(ChessPosition start, ChessPosition end) {
     public ChessMove(int startX, int startY, int endX, int endY) {
         this(new ChessPosition(startX, startY), new ChessPosition(endX, endY));
     }
-    
+
     public ChessMove deepCopy() {
         return new ChessMove(start.deepCopy(), end.deepCopy());
+    }
+
+    public String moveNotation() {
+        return start.toChessNotation() + end.toChessNotation();
     }
 }

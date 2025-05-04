@@ -185,6 +185,7 @@ public class BoardManager {
 
     public void updateBoardStateHistory() {
         String FEN = ChessNotationUtils.getFEN(currentBoardState);
+        boardStateHistory.merge(currentBoardState, 1, Integer::sum);
         logger.debug("Updated board state (FEN): {}, occurrences: {}", FEN, boardStateHistory.get(currentBoardState));
     }
 

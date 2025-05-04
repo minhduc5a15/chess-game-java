@@ -186,7 +186,7 @@ public final class BoardState {
      */
     @Override
     public int hashCode() {
-        return ChessNotationUtils.getFEN(this).hashCode();
+        return ChessNotationUtils.getFenFourParts(this).hashCode();
     }
 
     /**
@@ -205,7 +205,7 @@ public final class BoardState {
             return false;
         }
         BoardState other = (BoardState) obj;
-        return Objects.equals(ChessNotationUtils.getFEN(this), ChessNotationUtils.getFEN(other));
+        return Objects.equals(ChessNotationUtils.getFenFourParts(this), ChessNotationUtils.getFenFourParts(other));
     }
 
     public BoardState deepCopy() {

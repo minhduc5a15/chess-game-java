@@ -30,10 +30,8 @@ public class GameHistoryManager {
 
         BoardState stateCopy = state.deepCopy();
         undoStack.push(stateCopy);
-        if (!redoStack.empty()) redoStack.clear();
-        boardStateHistory.merge(stateCopy, 1, Integer::sum);
-        logger.debug("Saved state for undo. Board state count: {}, Undo stack size: {}",
-                boardStateHistory.get(stateCopy), undoStack.size());
+        incrementBoardStateCount(stateCopy);
+        logger.debug("Saved state for undo. Board state count: {}, Undo stack size: {}", boardStateHistory.get(stateCopy), undoStack.size());
     }
 
     public void saveStateForRedo(BoardState state) {
@@ -56,5 +54,27 @@ public class GameHistoryManager {
 
     public Map<BoardState, Integer> getBoardStateHistory() {
         return boardStateHistory;
+    }
+
+    public void clearRedoStack() {
+        this.redoStack.clear();
+    }
+
+    public void incrementBoardStateCount(BoardState state) {
+        if (state == null) {
+            logger.warn("Attempted to increment count for null BoardState");
+            return;
+        }
+        boardStateHistory.merge(state, 1, Integer::sum);
+        logger.debug("Incremented board state count: {} -> {}", state, boardStateHistory.get(state));
+    }
+
+    public void decrementBoardStateCount(BoardState state) {
+        if (state == null) {
+            logger.warn("Attempted to decrement count for null BoardState");
+            return;
+        }
+        boardStateHistory.computeIfPresent(state, (k, v) -> v > 1 ? v - 1 : null);
+        logger.debug("Decremented board state count: {} -> {}", state, boardStateHistory.getOrDefault(state, 0));
     }
 }

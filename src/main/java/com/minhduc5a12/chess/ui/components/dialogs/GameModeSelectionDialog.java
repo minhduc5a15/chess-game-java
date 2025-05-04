@@ -35,7 +35,7 @@ public class GameModeSelectionDialog extends JDialog {
     private static final int FRAME_HEIGHT = 600;
 
     public GameModeSelectionDialog(Frame parent) {
-        super(parent, "Chọn chế độ chơi", true);
+        super(parent, "Select Game Mode", true);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(30, 30, 30));
         setResizable(false);
@@ -46,7 +46,7 @@ public class GameModeSelectionDialog extends JDialog {
         roundedPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
         roundedPanel.setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 
-        JLabel messageLabel = new JLabel("Chọn chế độ chơi:", SwingConstants.CENTER);
+        JLabel messageLabel = new JLabel("Select Game Mode", SwingConstants.CENTER);
         messageLabel.setFont(new Font("Arial", Font.BOLD, 20));
         messageLabel.setForeground(Color.WHITE);
         roundedPanel.add(messageLabel, BorderLayout.NORTH);
