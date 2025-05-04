@@ -1,31 +1,21 @@
 package com.minhduc5a12.chess.ui.components.panels;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.GridLayout;
-import java.awt.Image;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.minhduc5a12.chess.constants.GameMode;
 import com.minhduc5a12.chess.game.ChessBoard;
 import com.minhduc5a12.chess.game.ChessController;
 import com.minhduc5a12.chess.game.GameStateListener;
 import com.minhduc5a12.chess.ui.components.dialogs.ResignDialog;
 import com.minhduc5a12.chess.utils.ImageLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A customizable toolbar for the chess game, containing evenly spaced buttons

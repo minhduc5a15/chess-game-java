@@ -6,7 +6,11 @@ import com.minhduc5a12.chess.core.model.ChessPiece;
 import com.minhduc5a12.chess.core.model.ChessPosition;
 
 public interface MoveExecutor {
-    boolean executeMove(ChessMove move);
+    boolean executeMove(ChessMove move, ChessPiece promotionPiece);
+
+    default boolean executeMove(ChessMove move) {
+        return executeMove(move, null);
+    }
 
     boolean performCastling(boolean isKingside, PieceColor color);
 

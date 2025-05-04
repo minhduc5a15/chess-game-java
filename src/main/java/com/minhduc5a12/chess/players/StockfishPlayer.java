@@ -1,19 +1,23 @@
 package com.minhduc5a12.chess.players;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.core.model.ChessMove;
+import com.minhduc5a12.chess.core.model.ChessPiece;
 import com.minhduc5a12.chess.core.model.ChessPosition;
+import com.minhduc5a12.chess.core.pieces.Bishop;
+import com.minhduc5a12.chess.core.pieces.Knight;
+import com.minhduc5a12.chess.core.pieces.Queen;
+import com.minhduc5a12.chess.core.pieces.Rook;
 import com.minhduc5a12.chess.engine.Stockfish;
 import com.minhduc5a12.chess.game.ChessController;
 import com.minhduc5a12.chess.ui.board.ChessTile;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an AI player powered by the Stockfish chess engine.
@@ -57,9 +61,20 @@ public class StockfishPlayer implements Player {
                     String endPos = bestMoveStr.substring(2, 4);
                     ChessPosition start = ChessPosition.toChessPosition(startPos);
                     ChessPosition end = ChessPosition.toChessPosition(endPos);
-                    ChessMove move = new ChessMove(start, end);
+                    ChessPiece promotionPiece = null;
+
+                    if (bestMoveStr.length() > 4) {
+                        char promotion = bestMoveStr.charAt(4);
+                        promotionPiece = getPromotionPiece(promotion, stockfishColor); // Gán giá trị cho promotionPiece
+                        logger.info("Promotion detected: {} to {} with promotion to {}", startPos, endPos, promotion);
+                    } else if (isCastling(start, end)) {
+                        logger.info("Castling move detected: {} to {}", startPos, endPos);
+                    } else {
+                        logger.info("Best move from Stockfish: {} to {}", startPos, endPos);
+                    }
 
                     ChessTile startTile = chessController.getTile(start);
+
                     if (startTile != null && startTile.getPiece() != null) {
                         chessController.setCurrentLeftClickedTile(startTile);
                         logger.debug("Generated valid moves for AI piece at {}", startPos);
@@ -68,16 +83,9 @@ public class StockfishPlayer implements Player {
                         return;
                     }
 
-                    if (bestMoveStr.length() > 4) {
-                        char promotion = bestMoveStr.charAt(4);
-                        logger.info("Promotion detected: {} to {} with promotion to {}", startPos, endPos, promotion);
-                    } else if (isCastling(start, end)) {
-                        logger.info("Castling move detected: {} to {}", startPos, endPos);
-                    } else {
-                        logger.info("Best move from Stockfish: {} to {}", startPos, endPos);
-                    }
+                    ChessMove move = new ChessMove(start, end);
+                    boolean success = chessController.movePiece(move, promotionPiece); // Truyền promotionPiece
 
-                    boolean success = chessController.movePiece(move);
                     if (!success) {
                         logger.warn("Failed to execute Stockfish move: {} to {}", startPos, endPos);
                     } else {
@@ -117,5 +125,18 @@ public class StockfishPlayer implements Player {
             return start.toChessNotation().equals("e1") || start.toChessNotation().equals("e8");
         }
         return false;
+    }
+
+    private ChessPiece getPromotionPiece(char promotion, PieceColor color) {
+        return switch (Character.toLowerCase(promotion)) {
+            case 'q' -> new Queen(color);
+            case 'r' -> new Rook(color);
+            case 'b' -> new Bishop(color);
+            case 'n' -> new Knight(color);
+            default -> {
+                logger.warn("Invalid promotion piece: {}, defaulting to Queen", promotion);
+                yield new Queen(color);
+            }
+        };
     }
 }

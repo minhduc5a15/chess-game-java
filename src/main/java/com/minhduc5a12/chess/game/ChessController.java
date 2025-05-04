@@ -29,7 +29,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Controls the chess game logic, managing the board and player interactions.
+ * Manages the chess game logic, including board state, player interactions, and move execution.
+ * Extends {@link BoardManager} to handle the chessboard and implements {@link MoveExecutor} for move-related operations.
  */
 public class ChessController extends BoardManager implements MoveExecutor {
 
@@ -49,7 +50,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
     private final List<GameStateListener> gameStateListeners = new ArrayList<>();
 
     /**
-     * Constructs a ChessController with initial settings.
+     * Constructs a new {@code ChessController} with default settings.
+     * Initializes the game state, history manager, and sets up the initial board position.
      */
     public ChessController() {
         super();
@@ -62,45 +64,45 @@ public class ChessController extends BoardManager implements MoveExecutor {
     // --- Getters and Setters ---
 
     /**
-     * Returns the frame containing the chess game UI.
+     * Gets the {@code JFrame} containing the chess game UI.
      *
-     * @return the JFrame of the game
+     * @return the {@code JFrame} of the game
      */
     public JFrame getFrame() {
         return frame;
     }
 
     /**
-     * Sets the frame containing the chess game UI.
+     * Sets the {@code JFrame} containing the chess game UI.
      *
-     * @param frame the JFrame to set
+     * @param frame the {@code JFrame} to set
      */
     public void setFrame(JFrame frame) {
         this.frame = frame;
     }
 
     /**
-     * Returns the game history manager.
+     * Gets the game history manager.
      *
-     * @return the GameHistoryManager
+     * @return the {@code GameHistoryManager} instance
      */
     public GameHistoryManager getHistoryManager() {
         return historyManager;
     }
 
     /**
-     * Returns the current game mode.
+     * Gets the current game mode.
      *
-     * @return the game mode (e.g., PLAYER_VS_PLAYER, PLAYER_VS_AI, AI_VS_AI)
+     * @return the game mode (e.g., {@code PLAYER_VS_PLAYER}, {@code PLAYER_VS_AI}, {@code AI_VS_AI})
      */
     public int getGameMode() {
         return gameMode;
     }
 
     /**
-     * Returns the color of the human player in PLAYER_VS_AI mode.
+     * Gets the color of the human player in {@code PLAYER_VS_AI} mode.
      *
-     * @return the PieceColor of the human player, or null if not applicable
+     * @return the {@code PieceColor} of the human player, or {@code null} if not applicable
      */
     public PieceColor getHumanPlayerColor() {
         if (gameMode == GameMode.PLAYER_VS_AI) {
@@ -112,18 +114,18 @@ public class ChessController extends BoardManager implements MoveExecutor {
     /**
      * Checks if the game has ended.
      *
-     * @return true if the game has ended, false otherwise
+     * @return {@code true} if the game has ended, {@code false} otherwise
      */
     public boolean isGameEnded() {
         return gameEnded;
     }
 
-    // --- Listeners registration ---
+    // --- Listener Registration ---
 
     /**
      * Adds a listener for player panel updates.
      *
-     * @param listener the PlayerPanelListener to add
+     * @param listener the {@code PlayerPanelListener} to add
      */
     public void addPlayerPanelListener(PlayerPanelListener listener) {
         playerPanelListeners.add(listener);
@@ -132,16 +134,17 @@ public class ChessController extends BoardManager implements MoveExecutor {
     /**
      * Adds a listener for game state changes.
      *
-     * @param listener the GameStateListener to add
+     * @param listener the {@code GameStateListener} to add
      */
     public void addGameStateListener(GameStateListener listener) {
         gameStateListeners.add(listener);
     }
 
-    // --- Game mode setup ---
+    // --- Game Mode Setup ---
 
     /**
-     * Configures the game for Player vs Player mode.
+     * Configures the game for Player vs. Player mode.
+     * Assigns human players to both White and Black.
      */
     public void setPlayerVsPlayer() {
         this.gameMode = GameMode.PLAYER_VS_PLAYER;
@@ -151,9 +154,9 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
-     * Configures the game for Player vs AI mode.
+     * Configures the game for Player vs. AI mode.
      *
-     * @param humanColor the color of the human player (White or Black)
+     * @param humanColor the color of the human player ({@code WHITE} or {@code BLACK})
      */
     public void setPlayerVsAI(PieceColor humanColor) {
         this.gameMode = GameMode.PLAYER_VS_AI;
@@ -172,7 +175,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
-     * Configures the game for AI vs AI mode.
+     * Configures the game for AI vs. AI mode.
+     * Assigns Stockfish players to both White and Black.
      */
     public void setAIVsAI() {
         this.gameMode = GameMode.AI_VS_AI;
@@ -182,8 +186,11 @@ public class ChessController extends BoardManager implements MoveExecutor {
         whitePlayer.makeMove();
     }
 
-    // --- Notification methods ---
+    // --- Notification Methods ---
 
+    /**
+     * Notifies all registered {@code GameStateListener}s of a game state change.
+     */
     private void notifyGameStateChanged() {
         logger.debug("Notifying {} GameStateListeners of game state change", gameStateListeners.size());
         for (GameStateListener listener : new ArrayList<>(gameStateListeners)) {
@@ -191,6 +198,9 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
     }
 
+    /**
+     * Notifies all registered {@code PlayerPanelListener}s of updated material scores.
+     */
     private void notifyScoreUpdated() {
         int materialAdvantage = getChessPieceMap().getMaterialAdvantage();
         for (PlayerPanelListener listener : playerPanelListeners) {
@@ -199,28 +209,38 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
     }
 
+    /**
+     * Notifies all registered {@code PlayerPanelListener}s of a turn change.
+     */
     private void notifyTurnChanged() {
         for (PlayerPanelListener listener : playerPanelListeners) {
             listener.onTurnChanged(getCurrentBoardState().getCurrentPlayerColor());
         }
     }
 
+    /**
+     * Notifies all registered {@code PlayerPanelListener}s of a piece capture.
+     *
+     * @param capturerColor the color of the capturing player
+     * @param capturedPiece the captured piece
+     */
     private void notifyPieceCaptured(PieceColor capturerColor, ChessPiece capturedPiece) {
         for (PlayerPanelListener listener : playerPanelListeners) {
             listener.onPieceCaptured(capturerColor, capturedPiece);
         }
     }
 
-    // --- Move execution and game logic ---
+    // --- Move Execution and Game Logic ---
 
     /**
      * Executes a chess move and updates the game state.
      *
-     * @param move the ChessMove to execute
-     * @return true if the move was executed successfully, false otherwise
+     * @param move           the {@code ChessMove} to execute
+     * @param promotionPiece the piece to promote to, if applicable (for AI); {@code null} for human players
+     * @return {@code true} if the move was executed successfully, {@code false} otherwise
      */
     @Override
-    public boolean executeMove(ChessMove move) {
+    public boolean executeMove(ChessMove move, ChessPiece promotionPiece) {
         ChessPiece piece = getPiece(move.start());
         BoardState currentBoardState = getCurrentBoardState();
 
@@ -239,7 +259,12 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
 
         if (piece instanceof Pawn && (move.end().row() == 7 || move.end().row() == 0)) {
-            piece = promotePawn(move.end(), piece.getColor());
+            if (promotionPiece != null) {
+                piece = promotionPiece;
+                logger.info("AI pawn promoted to {} at {}", piece.getClass().getSimpleName(), move.end().toChessNotation());
+            } else {
+                piece = promotePawn(move.end(), piece.getColor());
+            }
             SoundPlayer.playMoveSound();
         }
 
@@ -296,9 +321,9 @@ public class ChessController extends BoardManager implements MoveExecutor {
     /**
      * Performs a castling move for the specified color.
      *
-     * @param isKingside true for kingside castling, false for queenside
-     * @param color      the color of the player castling
-     * @return true if castling was successful, false otherwise
+     * @param isKingside {@code true} for kingside castling, {@code false} for queenside
+     * @param color      the color of the player performing castling
+     * @return {@code true} if castling was successful, {@code false} otherwise
      */
     @Override
     public boolean performCastling(boolean isKingside, PieceColor color) {
@@ -320,7 +345,6 @@ public class ChessController extends BoardManager implements MoveExecutor {
             return false;
         }
 
-        // Save the current state for undo
         historyManager.clearRedoStack();
         historyManager.saveStateForUndo(getCurrentBoardState());
 
@@ -365,8 +389,8 @@ public class ChessController extends BoardManager implements MoveExecutor {
     /**
      * Performs an en passant move.
      *
-     * @param move the ChessMove representing the en passant
-     * @return true if the move was successful, false otherwise
+     * @param move the {@code ChessMove} representing the en passant
+     * @return {@code true} if the move was successful, {@code false} otherwise
      */
     @Override
     public boolean performEnPassant(ChessMove move) {
@@ -402,7 +426,6 @@ public class ChessController extends BoardManager implements MoveExecutor {
             return false;
         }
 
-        // Save the current state for undo
         historyManager.clearRedoStack();
         historyManager.saveStateForUndo(getCurrentBoardState());
 
@@ -435,11 +458,11 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
-     * Promotes a pawn to a selected piece.
+     * Promotes a pawn to a selected piece, displaying a dialog for human players.
      *
      * @param position the position of the pawn to promote
      * @param color    the color of the pawn
-     * @return the promoted ChessPiece
+     * @return the promoted {@code ChessPiece}
      */
     @Override
     public ChessPiece promotePawn(ChessPosition position, PieceColor color) {
@@ -466,10 +489,11 @@ public class ChessController extends BoardManager implements MoveExecutor {
     /**
      * Attempts to move a piece according to the specified move.
      *
-     * @param move the ChessMove to attempt
-     * @return true if the move was successful, false otherwise
+     * @param move           the {@code ChessMove} to attempt
+     * @param promotionPiece the piece to promote to, if applicable (for AI); {@code null} for human players
+     * @return {@code true} if the move was successful, {@code false} otherwise
      */
-    public boolean movePiece(ChessMove move) {
+    public boolean movePiece(ChessMove move, ChessPiece promotionPiece) {
         ChessPiece piece = getPiece(move.start());
         boolean moveSuccessful = false;
         if (piece == null || gameEnded || !getCurrentValidMoves().contains(move) || !BoardUtils.isMoveValidUnderCheck(move, getChessPieceMap())) {
@@ -498,7 +522,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
                 }
             }
             default -> {
-                moveSuccessful = executeMove(move);
+                moveSuccessful = executeMove(move, promotionPiece);
             }
         }
 
@@ -515,6 +539,16 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
+     * Attempts to move a piece without a specified promotion piece.
+     *
+     * @param move the {@code ChessMove} to attempt
+     * @return {@code true} if the move was successful, {@code false} otherwise
+     */
+    public boolean movePiece(ChessMove move) {
+        return movePiece(move, null);
+    }
+
+    /**
      * Undoes the last move and restores the previous game state.
      */
     public void undoMove() {
@@ -526,46 +560,35 @@ public class ChessController extends BoardManager implements MoveExecutor {
 
         clearLastMoveHighlights();
 
-        // Decrement the count of the current board state
         historyManager.decrementBoardStateCount(getCurrentBoardState());
 
-        // Save the current state for redo
         historyManager.saveStateForRedo(getCurrentBoardState());
         logger.debug("Undo: Saved state for redo, redoStack size = {}", historyManager.getRedoStack().size());
 
-        // Pop the previous state from the undo stack
         BoardState previousState = historyManager.getUndoStack().pop();
         logger.debug("Undo: Popped state from undoStack, undoStack size = {}", historyManager.getUndoStack().size());
 
-        // Decrement the count of the previous state
         historyManager.decrementBoardStateCount(previousState);
 
-        // Clear the current board
         clear();
 
-        // Restore pieces from the previous state
         for (Map.Entry<ChessPosition, ChessPiece> entry : previousState.getChessPieceMap().getPieceMap().entrySet()) {
             ChessPosition pos = entry.getKey();
             ChessPiece piece = entry.getValue();
             setPiece(pos, piece);
         }
 
-        // Update BoardState using updateFrom
         getCurrentBoardState().updateFrom(previousState);
 
-        // Highlight the last move
         setLastMove(previousState.getLastMove());
 
-        // Repaint all tiles
         repaintPieces();
 
-        // Update UI and notifications
         notifyTurnChanged();
         notifyScoreUpdated();
         setCurrentLeftClickedTile(null);
         clearCurrentValidMoves();
 
-        // Play sound
         SoundPlayer.playMoveSound();
         logger.info("Undo move performed, restored to previous state");
 
@@ -584,49 +607,37 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
 
         try {
-            // Pop the next state from the redo stack first
             BoardState nextState = historyManager.getRedoStack().pop();
             logger.debug("Redo: Popped state from redoStack, redoStack size = {}", historyManager.getRedoStack().size());
 
-            // Decrement the count of the current board state
             historyManager.decrementBoardStateCount(getCurrentBoardState());
 
-            // Save the current state for undo after popping
             historyManager.saveStateForUndo(getCurrentBoardState());
             logger.debug("Redo: Saved state for undo, undoStack size = {}", historyManager.getUndoStack().size());
 
-            // Increment the count of the restored state
             historyManager.incrementBoardStateCount(nextState);
 
             clearLastMoveHighlights();
 
-            // Clear the current board
             clear();
 
-            // Restore pieces
             for (Map.Entry<ChessPosition, ChessPiece> entry : nextState.getChessPieceMap().getPieceMap().entrySet()) {
                 ChessPosition pos = entry.getKey();
                 ChessPiece piece = entry.getValue();
                 setPiece(pos, piece);
             }
 
-            // Update BoardState
             getCurrentBoardState().updateFrom(nextState);
 
-            // Highlight the last move
             setLastMove(nextState.getLastMove());
 
-            // Repaint all tiles
             repaintPieces();
 
-            // Update UI
             notifyTurnChanged();
             notifyScoreUpdated();
             setCurrentLeftClickedTile(null);
             clearCurrentValidMoves();
 
-
-            // Play sound
             SoundPlayer.playMoveSound();
             logger.info("Redo performed, restored state: {}", nextState);
 
@@ -638,6 +649,9 @@ public class ChessController extends BoardManager implements MoveExecutor {
         }
     }
 
+    /**
+     * Displays a game-over dialog indicating the winner.
+     */
     private void showGameOverDialog() {
         String winner = (getCurrentBoardState().getCurrentPlayerColor().isWhite()) ? "Black" : "White";
         GameOverDialog dialog = new GameOverDialog(frame, "Checkmate " + winner + " player" + " win!");
@@ -645,7 +659,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
-     * Resigns the game for the current player.
+     * Resigns the game for the current player, declaring the opponent as the winner.
      */
     public void resignGame() {
         PieceColor currentPlayerColor = getCurrentBoardState().getCurrentPlayerColor();
@@ -667,7 +681,7 @@ public class ChessController extends BoardManager implements MoveExecutor {
     }
 
     /**
-     * Shuts down the game, cleaning up resources.
+     * Shuts down the game, cleaning up resources such as the executor and players.
      */
     public void shutdown() {
         executor.shutdown();
@@ -681,6 +695,9 @@ public class ChessController extends BoardManager implements MoveExecutor {
         logger.debug("Shutting down ChessController");
     }
 
+    /**
+     * Checks for game-ending conditions such as checkmate, stalemate, or draw scenarios.
+     */
     private void checkGameEndConditions() {
         BoardState currentBoardState = getCurrentBoardState();
 

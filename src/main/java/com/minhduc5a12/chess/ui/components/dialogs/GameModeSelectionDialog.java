@@ -1,45 +1,43 @@
 package com.minhduc5a12.chess.ui.components.dialogs;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.geom.RoundRectangle2D;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-
 import com.minhduc5a12.chess.constants.GameMode;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.utils.ImageLoader;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.geom.RoundRectangle2D;
+
+/**
+ * A dialog for selecting the chess game mode and player color.
+ */
 public class GameModeSelectionDialog extends JDialog {
-    private int selectedMode = GameMode.PLAYER_VS_PLAYER; // Mặc định
-    private PieceColor selectedColor = PieceColor.WHITE;
+    private int selectedMode = GameMode.PLAYER_VS_PLAYER; // Default mode
+    private PieceColor selectedColor = PieceColor.WHITE; // Default color
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 600;
 
+    /**
+     * Constructs a new game mode selection dialog.
+     *
+     * @param parent the parent {@code Frame} for the dialog
+     */
     public GameModeSelectionDialog(Frame parent) {
         super(parent, "Select Game Mode", true);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(30, 30, 30));
         setResizable(false);
-        setUndecorated(true);
+
+        // Handle window close event
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                onExit();
+            }
+        });
 
         JPanel roundedPanel = createRoundedPanel();
         roundedPanel.setLayout(new BorderLayout(10, 10));
@@ -57,9 +55,13 @@ public class GameModeSelectionDialog extends JDialog {
 
         pack();
         setLocationRelativeTo(parent);
-        setShape(new RoundRectangle2D.Double(0, 0, getWidth(), getHeight(), 20, 20));
     }
 
+    /**
+     * Creates a rounded panel with a wood texture background.
+     *
+     * @return the rounded {@code JPanel}
+     */
     private JPanel createRoundedPanel() {
         return new JPanel() {
             @Override
@@ -75,12 +77,17 @@ public class GameModeSelectionDialog extends JDialog {
         };
     }
 
+    /**
+     * Creates a panel containing buttons for game mode selection.
+     *
+     * @return the button {@code JPanel}
+     */
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.Y_AXIS));
 
-        JButton pvpButton = createStyledButton("Player vs PLayer");
+        JButton pvpButton = createStyledButton("Player vs Player");
         pvpButton.addActionListener(this::onPlayerVsPlayerSelected);
         JButton pvaiButton = createStyledButton("Player vs Bot");
         pvaiButton.addActionListener(this::onPlayerVsAISelected);
@@ -101,6 +108,12 @@ public class GameModeSelectionDialog extends JDialog {
         return buttonPanel;
     }
 
+    /**
+     * Creates a styled button with custom appearance.
+     *
+     * @param text the button text
+     * @return the styled {@code JButton}
+     */
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text) {
             @Override
@@ -142,21 +155,39 @@ public class GameModeSelectionDialog extends JDialog {
         return button;
     }
 
+    /**
+     * Handles the selection of Player vs. Player mode.
+     *
+     * @param e the action event
+     */
     private void onPlayerVsPlayerSelected(ActionEvent e) {
         selectedMode = GameMode.PLAYER_VS_PLAYER;
         dispose();
     }
 
+    /**
+     * Handles the selection of Player vs. AI mode and shows the color selection dialog.
+     *
+     * @param e the action event
+     */
     private void onPlayerVsAISelected(ActionEvent e) {
         selectedMode = GameMode.PLAYER_VS_AI;
         showColorSelectionDialog();
     }
 
+    /**
+     * Handles the selection of AI vs. AI mode.
+     *
+     * @param e the action event
+     */
     private void onAIVsAISelected(ActionEvent e) {
         selectedMode = GameMode.AI_VS_AI;
         dispose();
     }
 
+    /**
+     * Shows a dialog for selecting the player's color in Player vs. AI mode.
+     */
     private void showColorSelectionDialog() {
         ColorSelectionDialog colorDialog = new ColorSelectionDialog(null);
         colorDialog.setVisible(true);
@@ -164,11 +195,29 @@ public class GameModeSelectionDialog extends JDialog {
         dispose();
     }
 
+    /**
+     * Gets the selected game mode.
+     *
+     * @return the selected game mode
+     */
     public int getSelectedMode() {
         return selectedMode;
     }
 
+    /**
+     * Gets the selected color for the human player in Player vs. AI mode.
+     *
+     * @return the selected {@code PieceColor}
+     */
     public PieceColor getSelectedColor() {
         return selectedColor;
+    }
+
+    /**
+     * Handles the dialog close event, disposing the dialog and exiting the application.
+     */
+    public void onExit() {
+        dispose();
+        System.exit(0);
     }
 }
