@@ -1,180 +1,92 @@
 package com.minhduc5a12.chess.game;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.minhduc5a12.chess.constants.GameConstants;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.core.model.BoardState;
 import com.minhduc5a12.chess.core.model.ChessMove;
 import com.minhduc5a12.chess.core.model.ChessPiece;
 import com.minhduc5a12.chess.core.model.ChessPosition;
-import com.minhduc5a12.chess.core.pieces.Bishop;
-import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
-import com.minhduc5a12.chess.core.pieces.King;
-import com.minhduc5a12.chess.core.pieces.Knight;
-import com.minhduc5a12.chess.core.pieces.Pawn;
-import com.minhduc5a12.chess.core.pieces.Queen;
-import com.minhduc5a12.chess.core.pieces.Rook;
-import com.minhduc5a12.chess.ui.board.ChessTile;
-import com.minhduc5a12.chess.utils.BoardUtils;
+import com.minhduc5a12.chess.core.pieces.*;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Manages the chess board state, including pieces, moves, and history.
+ */
 public class BoardManager {
 
     protected static final Logger logger = LoggerFactory.getLogger(BoardManager.class);
-
-    // Fields
-    private final ChessTile[][] tiles = new ChessTile[GameConstants.Board.BOARD_SIZE][GameConstants.Board.BOARD_SIZE];
     private final Map<BoardState, Integer> boardStateHistory;
-    private ChessTile currentLeftClickedTile;
-    private List<ChessMove> currentValidMoves;
     private final BoardState currentBoardState;
 
-    // Constructor
+    /**
+     * Constructs a new BoardManager with an empty board state.
+     */
     public BoardManager() {
         this.boardStateHistory = new HashMap<>();
-        this.currentLeftClickedTile = null;
         this.currentBoardState = new BoardState(new ChessPieceMap());
-        this.currentValidMoves = new ArrayList<>();
-        initializeTiles();
     }
 
-    // --- Getters and Setters ---
-
-    public BoardState getCurrentBoardState() {
-        return currentBoardState;
-    }
-
-    public ChessPiece getPiece(ChessPosition position) {
-        return currentBoardState.getChessPieceMap().getPiece(position);
-    }
-
-    public ChessPiece getPiece(String chessNotation) {
-        return currentBoardState.getChessPieceMap().getPiece(chessNotation);
-    }
-
-    public PieceColor getCurrentPlayerColor() {
-        return currentBoardState.getCurrentPlayerColor();
-    }
-
-    public ChessTile getCurrentLeftClickedTile() {
-        return currentLeftClickedTile;
-    }
-
-    public void setCurrentLeftClickedTile(ChessTile tile) {
-        if (currentLeftClickedTile != null) {
-            currentLeftClickedTile.setLeftClickSelected(false);
-            clearValidMoveHighlights();
-        }
-        currentLeftClickedTile = tile;
-        if (tile != null) {
-            tile.setLeftClickSelected(true);
-            generateAndHighlightValidMoves(tile);
-        }
-    }
-
-    public ChessPieceMap getChessPieceMap() {
-        return currentBoardState.getChessPieceMap();
-    }
-
-    public ChessTile[][] getTiles() {
-        return tiles;
-    }
-
-    public ChessTile getTile(ChessPosition position) {
-        return tiles[position.matrixRow()][position.matrixCol()];
-    }
-
-    public ChessMove getLastMove() {
-        return currentBoardState.getLastMove();
-    }
-
-    public void setLastMove(ChessMove lastMove) {
-        clearLastMoveHighlights();
-        currentBoardState.setLastMove(lastMove);
-        if (lastMove != null) {
-            highlightLastMove();
-            logger.info("Last move: {}", lastMove);
-        }
-    }
-
-    public Map<BoardState, Integer> getBoardStateHistory() {
-        return boardStateHistory;
-    }
-
-    public List<ChessMove> getCurrentValidMoves() {
-        return currentValidMoves;
-    }
-
+    /**
+     * Sets a piece at the specified position.
+     *
+     * @param position The position to place the piece.
+     * @param piece    The piece to place.
+     */
     public void setPiece(ChessPosition position, ChessPiece piece) {
         currentBoardState.getChessPieceMap().setPiece(position, piece);
-        getTile(position).setPiece(piece);
     }
 
+    /**
+     * Sets a piece at the specified coordinates.
+     *
+     * @param x     The column index (0-7).
+     * @param y     The row index (0-7).
+     * @param piece The piece to place.
+     */
     public void setPiece(int x, int y, ChessPiece piece) {
         setPiece(new ChessPosition(x, y), piece);
     }
 
-    // --- Core methods ---
-
-    private void initializeTiles() {
-        for (int row = 0; row < GameConstants.Board.BOARD_SIZE; row++) {
-            for (int col = 0; col < GameConstants.Board.BOARD_SIZE; col++) {
-                tiles[row][col] = new ChessTile(new ChessPosition(col, GameConstants.Board.BOARD_SIZE - row - 1), (ChessController) this);
-            }
-        }
+    /**
+     * Gets the piece at the specified position.
+     *
+     * @param position The position to check.
+     * @return The piece at the position, or null if none.
+     */
+    public ChessPiece getPiece(ChessPosition position) {
+        return currentBoardState.getChessPieceMap().getPiece(position);
     }
 
-    public void setupInitialPosition() {
-        clear();
-        placeInitialPieces(PieceColor.WHITE, 0, 1);
-        placeInitialPieces(PieceColor.BLACK, 7, 6);
+    /**
+     * Gets the piece at the specified chess notation (e.g., "e4").
+     *
+     * @param chessNotation The chess notation of the position.
+     * @return The piece at the position, or null if none.
+     * @ noon, at 6:00 PM
+     * Gets the piece at the specified chess notation (e.g., "e4").
+     */
+    public ChessPiece getPiece(String chessNotation) {
+        return currentBoardState.getChessPieceMap().getPiece(chessNotation);
     }
 
-    public void repaintPieces() {
-        for (Map.Entry<ChessPosition, ChessPiece> entry : currentBoardState.getChessPieceMap().getPieceMap().entrySet()) {
-            ChessPosition position = entry.getKey();
-            ChessPiece piece = entry.getValue();
-            if (piece != null) {
-                ChessTile tile = getTile(position);
-                if (!tile.getPiece().equals(piece)) {
-                    tile.setPiece(piece);
-                }
-            }
-        }
-    }
-
-    public void switchTurn() {
-        currentBoardState.setCurrentPlayerColor(currentBoardState.getCurrentPlayerColor().getOpponent());
-        clearCurrentValidMoves();
-        setCurrentLeftClickedTile(null);
-
-        currentBoardState.incrementFullmoveNumber();
-
-        logger.debug("Switched turn to: {}", currentBoardState.getCurrentPlayerColor());
-    }
-
-    public void clear() {
-        currentBoardState.getChessPieceMap().clear();
-        for (ChessTile[] row : tiles) {
-            for (ChessTile tile : row) {
-                tile.setPiece(null);
-            }
-        }
-        currentLeftClickedTile = null;
-    }
-
+    /**
+     * Removes a piece from the specified position.
+     *
+     * @param position The position to clear.
+     */
     public void removePiece(ChessPosition position) {
         currentBoardState.getChessPieceMap().removePiece(position);
-        getTile(position).setPiece(null);
     }
 
+    /**
+     * Updates the movement status of a piece after a move.
+     *
+     * @param move The move performed.
+     */
     public void updatePieceMovement(ChessMove move) {
         ChessPiece piece = getPiece(move.end());
         if (piece != null) {
@@ -183,85 +95,70 @@ public class BoardManager {
         }
     }
 
+    /**
+     * Updates the board state history with the current state.
+     */
     public void updateBoardStateHistory() {
         String FEN = ChessNotationUtils.getFEN(currentBoardState);
         boardStateHistory.merge(currentBoardState, 1, Integer::sum);
         logger.debug("Updated board state (FEN): {}, occurrences: {}", FEN, boardStateHistory.get(currentBoardState));
     }
 
-    public void repaintTiles(ChessTile... tiles) {
-        for (ChessTile tile : tiles) {
-            if (tile != null) {
-                tile.repaint();
-            }
-        }
+    /**
+     * Sets up the initial chess position with standard piece placement.
+     */
+    public void setupInitialPosition() {
+        clear();
+        placeInitialPieces(PieceColor.WHITE, 0, 1);
+        placeInitialPieces(PieceColor.BLACK, 7, 6);
     }
 
-    // --- Helper methods ---
+    /**
+     * Clears all pieces from the board.
+     */
+    public void clear() {
+        currentBoardState.getChessPieceMap().clear();
+    }
 
+    /**
+     * Places initial pieces for a player on the specified rows.
+     *
+     * @param color   The color of the pieces.
+     * @param backRow The row for major pieces (0 or 7).
+     * @param pawnRow The row for pawns (1 or 6).
+     */
     private void placeInitialPieces(PieceColor color, int backRow, int pawnRow) {
-        setPiece(0, backRow, new Rook(color));
-        setPiece(1, backRow, new Knight(color));
-        setPiece(2, backRow, new Bishop(color));
-        setPiece(3, backRow, new Queen(color));
-        setPiece(4, backRow, new King(color));
-        setPiece(5, backRow, new Bishop(color));
-        setPiece(6, backRow, new Knight(color));
-        setPiece(7, backRow, new Rook(color));
+        ChessPiece[] backRowPieces = {new Rook(color), new Knight(color), new Bishop(color), new Queen(color), new King(color), new Bishop(color), new Knight(color), new Rook(color)};
         for (int col = 0; col < 8; col++) {
+            setPiece(col, backRow, backRowPieces[col]);
             setPiece(col, pawnRow, new Pawn(color, this.currentBoardState));
         }
     }
 
-    private void generateAndHighlightValidMoves(ChessTile tile) {
-        currentValidMoves = tile.getPiece().generateValidMoves(tile.getPosition(), currentBoardState.getChessPieceMap());
-        for (ChessMove move : currentValidMoves) {
-            if (BoardUtils.isMoveValidUnderCheck(move, currentBoardState.getChessPieceMap())) {
-                ChessTile endTile = getTile(move.end());
-                if (endTile != null) {
-                    endTile.setValidMove(true);
-                }
-            }
-        }
+    // Getters and Setters
+
+    public BoardState getCurrentBoardState() {
+        return currentBoardState;
     }
 
-    private void clearValidMoveHighlights() {
-        for (ChessMove move : currentValidMoves) {
-            ChessTile endTile = getTile(move.end());
-            if (endTile != null) {
-                endTile.setValidMove(false);
-            }
-        }
+    public PieceColor getCurrentPlayerColor() {
+        return currentBoardState.getCurrentPlayerColor();
     }
 
-    public void clearCurrentValidMoves() {
-        if (!currentValidMoves.isEmpty()) {
-            clearValidMoveHighlights();
-            currentValidMoves.clear();
-        }
+    public ChessPieceMap getChessPieceMap() {
+        return currentBoardState.getChessPieceMap();
     }
 
-    public void clearLastMoveHighlights() {
-        if (currentBoardState.getLastMove() != null) {
-            ChessTile startTile = getTile(currentBoardState.getLastMove().start());
-            ChessTile endTile = getTile(currentBoardState.getLastMove().end());
-            if (startTile != null) {
-                startTile.setLastMove(false);
-            }
-            if (endTile != null) {
-                endTile.setLastMove(false);
-            }
-        }
+    public ChessMove getLastMove() {
+        return currentBoardState.getLastMove();
     }
 
-    private void highlightLastMove() {
-        ChessTile startTile = getTile(currentBoardState.getLastMove().start());
-        ChessTile endTile = getTile(currentBoardState.getLastMove().end());
-        if (startTile != null) {
-            startTile.setLastMove(true);
-        }
-        if (endTile != null) {
-            endTile.setLastMove(true);
-        }
+    public void setLastMove(ChessMove lastMove) {
+        currentBoardState.setLastMove(lastMove);
+        logger.info("Last move: {}", lastMove);
+    }
+
+    public Map<BoardState, Integer> getBoardStateHistory() {
+        return boardStateHistory;
     }
 }

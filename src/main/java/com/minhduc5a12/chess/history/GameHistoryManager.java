@@ -52,10 +52,6 @@ public class GameHistoryManager {
         return redoStack;
     }
 
-    public Map<BoardState, Integer> getBoardStateHistory() {
-        return boardStateHistory;
-    }
-
     public void clearRedoStack() {
         this.redoStack.clear();
     }

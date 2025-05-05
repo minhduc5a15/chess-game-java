@@ -1,14 +1,5 @@
 package com.minhduc5a12.chess.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.minhduc5a12.chess.constants.GameMode;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.game.ChessBoard;
@@ -16,6 +7,11 @@ import com.minhduc5a12.chess.game.ChessController;
 import com.minhduc5a12.chess.ui.components.panels.ChessToolbar;
 import com.minhduc5a12.chess.ui.components.panels.MoveHistoryPanel;
 import com.minhduc5a12.chess.ui.components.panels.PlayerPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * Manages the user interface for the chess game.
@@ -47,6 +43,7 @@ public class ChessUI {
         mainPanel.setBackground(new Color(30, 30, 30));
 
         ChessBoard chessBoard = new ChessBoard(chessController);
+        chessController.setChessBoard(chessBoard); // Đặt chessBoard vào ChessController
         mainPanel.add(chessBoard, BorderLayout.CENTER);
 
         logger.info("Game mode selected {}", chessController.getGameMode());
@@ -79,10 +76,10 @@ public class ChessUI {
             }
         }
 
-        MoveHistoryPanel moveHistoryPanel = new MoveHistoryPanel();
+        MoveHistoryPanel moveHistoryPanel = new MoveHistoryPanel(chessController.getHistoryManager());
         mainPanel.add(moveHistoryPanel, BorderLayout.NORTH);
 
-        ChessToolbar toolbar = new ChessToolbar(chessController, chessBoard);
+        ChessToolbar toolbar = new ChessToolbar(chessController, chessController.getBoardUI());
         mainPanel.add(toolbar, BorderLayout.SOUTH);
 
         frame.add(mainPanel);

@@ -55,7 +55,7 @@ public class StockfishPlayer implements Player {
                 return;
             }
             try {
-                String bestMoveStr = stockfishEngine.getBestMove(ChessNotationUtils.getFEN(chessController.getCurrentBoardState()));
+                String bestMoveStr = stockfishEngine.getBestMove(ChessNotationUtils.getFEN(chessController.getBoardManager().getCurrentBoardState()));
                 if (bestMoveStr != null) {
                     String startPos = bestMoveStr.substring(0, 2);
                     String endPos = bestMoveStr.substring(2, 4);
@@ -73,10 +73,10 @@ public class StockfishPlayer implements Player {
                         logger.info("Best move from Stockfish: {} to {}", startPos, endPos);
                     }
 
-                    ChessTile startTile = chessController.getTile(start);
+                    ChessTile startTile = chessController.getBoardUI().getTile(start);
 
                     if (startTile != null && startTile.getPiece() != null) {
-                        chessController.setCurrentLeftClickedTile(startTile);
+                        chessController.getBoardUI().setCurrentLeftClickedTile(startTile);
                         logger.debug("Generated valid moves for AI piece at {}", startPos);
                     } else {
                         logger.warn("No piece found at start position: {}", startPos);
@@ -84,12 +84,12 @@ public class StockfishPlayer implements Player {
                     }
 
                     ChessMove move = new ChessMove(start, end);
-                    boolean success = chessController.movePiece(move, promotionPiece); // Truyền promotionPiece
+                    boolean success = chessController.movePiece(move, promotionPiece);
 
                     if (!success) {
                         logger.warn("Failed to execute Stockfish move: {} to {}", startPos, endPos);
                     } else {
-                        chessController.setCurrentLeftClickedTile(null);
+                        chessController.getBoardUI().setCurrentLeftClickedTile(null);
                     }
                 } else {
                     logger.warn("No best move returned by Stockfish");

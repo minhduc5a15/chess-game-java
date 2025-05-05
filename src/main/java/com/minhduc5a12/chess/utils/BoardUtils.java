@@ -117,7 +117,7 @@ public class BoardUtils {
         String currentFEN = ChessNotationUtils.getFEN(boardManager.getCurrentBoardState());
         int occurrences = history.getOrDefault(boardManager.getCurrentBoardState(), 0);
         logger.debug("Checking threefold repetition (FIDE): FEN={}, occurrences={}", currentFEN, occurrences);
-        return occurrences >= 3; // Trả về true nếu trạng thái xuất hiện ít nhất 3 lần
+        return occurrences >= 3;
     }
 
     public static boolean isDeadPosition(ChessPieceMap pieceMap) {
