@@ -1,22 +1,19 @@
 package com.minhduc5a12.chess.utils;
 
-import java.util.List;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.core.model.BoardState;
 import com.minhduc5a12.chess.core.model.ChessMove;
 import com.minhduc5a12.chess.core.model.ChessPiece;
 import com.minhduc5a12.chess.core.model.ChessPosition;
-import com.minhduc5a12.chess.core.pieces.Bishop;
-import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
-import com.minhduc5a12.chess.core.pieces.King;
-import com.minhduc5a12.chess.core.pieces.Knight;
+import com.minhduc5a12.chess.core.pieces.*;
 import com.minhduc5a12.chess.game.BoardManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.minhduc5a12.chess.constants.GameConstants.Board.BOARD_SIZE;
 
 public class BoardUtils {
 
@@ -107,6 +104,11 @@ public class BoardUtils {
         tempMap.removePiece(move.end());
         tempMap.removePiece(move.start());
         tempMap.setPiece(move.end(), piece);
+
+        if (piece instanceof Pawn && move.start().col() != move.end().col() && !pieceMap.hasPiece(move.end())) {
+            ChessPosition capturedPawnPos = new ChessPosition(move.end().col(), move.start().row());
+            tempMap.removePiece(capturedPawnPos);
+        }
 
         return tempMap;
     }

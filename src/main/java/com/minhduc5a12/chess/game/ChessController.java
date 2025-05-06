@@ -236,7 +236,13 @@ public final class ChessController implements MoveExecutor {
             currentBoardState.clearHalfmoveClock();
         }
 
+        logger.debug("Executed move: {} to {}", move.start().toChessNotation(), move.end().toChessNotation());
+
+        actionManager.switchTurn();
+
         boolean isCheck = BoardUtils.isKingInCheck(currentBoardState.getCurrentPlayerColor(), currentBoardState.getChessPieceMap());
+
+        logger.debug("isCheck: {}", isCheck);
 
         if (isCheck) {
             SoundPlayer.playMoveCheckSound();
@@ -245,10 +251,6 @@ public final class ChessController implements MoveExecutor {
         } else {
             SoundPlayer.playMoveSound();
         }
-
-        logger.debug("Executed move: {} to {}", move.start().toChessNotation(), move.end().toChessNotation());
-
-        actionManager.switchTurn();
 
         executor.submit(this::checkGameEndConditions);
 
@@ -315,6 +317,12 @@ public final class ChessController implements MoveExecutor {
         logger.debug("Castling performed: {} for {}", isKingside ? "Kingside" : "Queenside", color);
 
         actionManager.switchTurn();
+
+        boolean isCheck = BoardUtils.isKingInCheck(boardManager.getCurrentPlayerColor(), boardManager.getChessPieceMap());
+
+        if (isCheck) {
+            SoundPlayer.playMoveCheckSound();
+        }
 
         executor.submit(this::checkGameEndConditions);
 
