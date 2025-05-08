@@ -241,7 +241,7 @@ public final class ChessController implements MoveExecutor {
         }
 
         logger.debug("Executed move: {} to {}", move.start().toChessNotation(), move.end().toChessNotation());
-
+        boardManager.updateBoardStateHistory();
         actionManager.switchTurn();
 
         boolean isCheck = BoardUtils.isKingInCheck(currentBoardState.getCurrentPlayerColor(), currentBoardState.getChessPieceMap());
