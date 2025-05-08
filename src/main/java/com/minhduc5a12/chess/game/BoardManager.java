@@ -99,6 +99,7 @@ public class BoardManager {
      * Updates the board state history with the current state.
      */
     public void updateBoardStateHistory() {
+        String fenFourParts = ChessNotationUtils.getFenFourParts(currentBoardState);
         String FEN = ChessNotationUtils.getFEN(currentBoardState);
         boardStateHistory.merge(currentBoardState, 1, Integer::sum);
         logger.debug("Updated board state (FEN): {}, occurrences: {}", FEN, boardStateHistory.get(currentBoardState));
