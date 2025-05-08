@@ -133,7 +133,7 @@ public class GameActionManager {
     public void switchTurn() {
         BoardState currentBoardState = controller.getBoardManager().getCurrentBoardState();
         currentBoardState.setCurrentPlayerColor(currentBoardState.getCurrentPlayerColor().getOpponent());
-        currentBoardState.incrementFullmoveNumber();
+        if (controller.getBoardManager().getCurrentPlayerColor().isWhite()) currentBoardState.incrementFullmoveNumber();
         controller.notifyGameStateChanged();
         controller.notifyTurnChanged();
         controller.notifyScoreUpdated();
