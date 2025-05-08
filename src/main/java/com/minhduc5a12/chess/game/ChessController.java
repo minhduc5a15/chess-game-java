@@ -217,7 +217,6 @@ public final class ChessController implements MoveExecutor {
         startTile.setPiece(null);
         endTile.setPiece(piece);
 
-        boardManager.updateBoardStateHistory();
 
         if (BoardUtils.isThreefoldRepetition(this.boardManager)) {
             gameEnded = true;
@@ -315,10 +314,13 @@ public final class ChessController implements MoveExecutor {
         kingEndTile.setPiece(king);
         rookEndTile.setPiece(rook);
 
+        boardManager.getCurrentBoardState().incrementHalfmoveClock();
+
         boardManager.updateBoardStateHistory();
 
         boardUI.repaintTiles(kingStartTile, kingEndTile, rookStartTile, rookEndTile);
         logger.debug("Castling performed: {} for {}", isKingside ? "Kingside" : "Queenside", color);
+        executor.submit(this::checkGameEndConditions);
 
         actionManager.switchTurn();
 
@@ -328,7 +330,6 @@ public final class ChessController implements MoveExecutor {
             SoundPlayer.playMoveCheckSound();
         }
 
-        executor.submit(this::checkGameEndConditions);
 
         return true;
     }

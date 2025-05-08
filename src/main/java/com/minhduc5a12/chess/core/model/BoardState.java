@@ -1,13 +1,13 @@
 package com.minhduc5a12.chess.core.model;
 
-import java.util.Objects;
-
 import com.minhduc5a12.chess.constants.PieceColor;
 import com.minhduc5a12.chess.core.pieces.ChessPieceMap;
 import com.minhduc5a12.chess.core.pieces.King;
 import com.minhduc5a12.chess.core.pieces.Pawn;
 import com.minhduc5a12.chess.core.pieces.Rook;
 import com.minhduc5a12.chess.utils.ChessNotationUtils;
+
+import java.util.Objects;
 
 /**
  * A class representing the state of a chessboard, including piece positions,
@@ -30,7 +30,7 @@ public final class BoardState {
     private boolean whiteCanCastleQueenside = true;
     private boolean blackCanCastleKingside = true;
     private boolean blackCanCastleQueenside = true;
-
+    // ...
     /**
      * Constructs a new board state with the given piece map and initializes
      * castling availability. Validates the presence and position of both kings,

@@ -138,7 +138,6 @@ public class GameActionManager {
         controller.notifyTurnChanged();
         controller.notifyScoreUpdated();
     }
-
     /**
      * Shuts down the manager, stopping the Stockfish engine.
      */
