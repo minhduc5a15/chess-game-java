@@ -236,6 +236,9 @@ public final class ChessController implements MoveExecutor {
         if (isCapture || isPawnMove) {
             currentBoardState.clearHalfmoveClock();
         }
+        else {
+            currentBoardState.incrementHalfmoveClock();
+        }
 
         logger.debug("Executed move: {} to {}", move.start().toChessNotation(), move.end().toChessNotation());
 
