@@ -70,6 +70,7 @@ public final class ChessController implements MoveExecutor {
         this.boardUI = new ChessBoardUI(this, boardManager);
         this.gameMode = GameMode.PLAYER_VS_PLAYER;
         setupInitialPosition();
+        boardManager.updateBoardStateHistory();
     }
 
     /**
