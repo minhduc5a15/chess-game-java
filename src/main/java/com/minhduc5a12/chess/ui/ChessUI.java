@@ -76,7 +76,8 @@ public class ChessUI {
             }
         }
 
-        MoveHistoryPanel moveHistoryPanel = new MoveHistoryPanel(chessController.getHistoryManager());
+        MoveHistoryPanel moveHistoryPanel = new MoveHistoryPanel(chessController);
+        chessController.addHistoryChangeListener(moveHistoryPanel);
         mainPanel.add(moveHistoryPanel, BorderLayout.NORTH);
 
         ChessToolbar toolbar = new ChessToolbar(chessController, chessController.getBoardUI());

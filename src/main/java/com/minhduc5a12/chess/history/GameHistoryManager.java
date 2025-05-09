@@ -31,7 +31,7 @@ public class GameHistoryManager {
         BoardState stateCopy = state.deepCopy();
         undoStack.push(stateCopy);
         incrementBoardStateCount(stateCopy);
-        logger.debug("Saved state for undo. Board state count: {}, Undo stack size: {}", boardStateHistory.get(stateCopy), undoStack.size());
+        logger.debug("Saved state for undo. Last move: {}, Undo stack size: {}", stateCopy.getLastMove(), undoStack.size());
     }
 
     public void saveStateForRedo(BoardState state) {

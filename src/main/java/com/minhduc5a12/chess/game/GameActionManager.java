@@ -78,7 +78,7 @@ public class GameActionManager {
 
         BoardState previousState = historyManager.getUndoStack().pop();
         restoreBoardState(previousState, true);
-//        controller.notifyHistoryChangeListeners();
+        controller.notifyHistoryChangeListeners();
         logger.info("Undo move performed, restored to previous state");
     }
 
@@ -95,7 +95,7 @@ public class GameActionManager {
         try {
             BoardState nextState = historyManager.getRedoStack().pop();
             restoreBoardState(nextState, false);
-//            controller.notifyHistoryChangeListeners();
+            controller.notifyHistoryChangeListeners();
             logger.info("Redo performed, restored state");
         } catch (Exception e) {
             logger.error("Redo failed: {}", e.getMessage(), e);
