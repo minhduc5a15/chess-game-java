@@ -1,5 +1,3 @@
-# Làm hộ luôn cái MoveHistoryPanel vào báo cáo giùm nhá :>
-
 # CHESS GAME
 
 - **Java**: 17+
